@@ -1,11 +1,13 @@
 import Navigation from './components/Navigation'
 import WeatherHero from './components/WeatherHero'
+import ScrimTransition from './components/ScrimTransition'
 function App() {
 
   return (
    <>
     <Navigation />
     <WeatherHero />
+    <ScrimTransition />
     <iframe className='w-screen h-screen' src="https://www.panahon.gov.ph/"></iframe>
    </> 
 
