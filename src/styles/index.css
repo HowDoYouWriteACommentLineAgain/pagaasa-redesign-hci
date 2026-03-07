@@ -1,11 +1,20 @@
+@import "tailwindcss";
+@plugin "daisyui";
+@theme {
+  --color-dark-azure:#22313f;
+  --color-grey-azure:#6288a2;
+  --color-dark-azure-translucent:#22313f90;
+  --color-grey-azure-translucent:#6288a290;
+}
+
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  color-scheme: light;
+  /* color: rgba(255, 255, 255, 0.87); */
+ /* background-color: #242424;*/
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -13,6 +22,19 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+[data-theme="light"] {
+  --b1: 0 0% 100%; /* White background for components like dropdowns */
+  --bc: 215 28% 17%; /* Dark text for contrast */
+}
+
+/*
+body{
+  margin: 0;
+  overflow-x: hidden; // This kills the horizontal scroll bug instantly /
+  width: 100%;
+}
+*/
+/*
 a {
   font-weight: 500;
   color: #646cff;
@@ -65,4 +87,4 @@ button:focus-visible {
   button {
     background-color: #f9f9f9;
   }
-}
+} */
