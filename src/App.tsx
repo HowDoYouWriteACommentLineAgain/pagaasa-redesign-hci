@@ -1,12 +1,12 @@
 import Navigation from './components/Navigation'
 import WeatherHero from './components/WeatherHero'
-
 function App() {
+
   return (
    <>
     <Navigation />
     <WeatherHero />
-    <iframe src="https://www.panahon.gov.ph/" width={window.innerWidth} height={window.innerHeight}></iframe>
+    <iframe className='w-screen h-screen' src="https://www.panahon.gov.ph/"></iframe>
    </> 
 
   )

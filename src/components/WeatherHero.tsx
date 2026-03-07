@@ -13,10 +13,10 @@ function WeatherHero(){
   };
 
   return(
-    <div className="relative flex flex-row items-center pb-5">
+    <div className="relative flex flex-row items-center pb-10">
       <div style={bgInfo} className="absolute inset-0 bg-cover bg-center blur-[0.5px] z-0" />
-      <div  className="ps-8 flex-6 pt-8 z-20">
-        <div className="flex flex-row items-center justify-between bg-dark-azure-translucent rounded-2xl px-6 py-2 text-2xl font-bold text-white">
+      <div id="text_overlay_wrapper"  className="ps-8 pe-4 flex-6 pt-8 z-20 max-w-2xl">
+        <div id="weather" className="flex flex-row items-center justify-between bg-dark-azure-translucent rounded-2xl px-6 py-2 text-2xl font-bold text-white">
           <h2>🌧 Luneta, Metro Manila</h2>
           <details className="dropdown">
             <summary className="btn btn-light bg-gray-200 font-light m-1">Set location</summary>
@@ -38,7 +38,7 @@ function WeatherHero(){
           <p className="uppercase"><b>Advisory</b> General Flood Warning is in effect</p>
         </div>
       </div>
-      <div className="flex-3" />
+      <div className="md:flex-3 sm:flex-2" />
   </div>
   )
 }
