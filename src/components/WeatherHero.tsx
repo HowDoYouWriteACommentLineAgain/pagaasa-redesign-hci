@@ -13,12 +13,15 @@ function WeatherHero(){
   };
 
   return(
-    <div className="relative flex flex-row items-center justify-center pb-10">
+    <section className="relative flex flex-row items-center justify-center h-130 w-full">
       <div style={bgInfo} className="absolute inset-0 bg-cover bg-center blur-[0.5px] z-0" />
 
-      <div id="text_overlay_wrapper"  className="relative ps-8 pe-4 lg:ms-20 flex-none pt-8 z-20 max-w-2xl">
+      {/* GRADIENT */}
+      <div className="absolute inset-0 bg-linear-to-r from-[#1a202c]/80 to-transparent" />
 
-        <div id="weather" className="flex flex-row items-center justify-between bg-dark-azure-translucent rounded-2xl px-6 py-2 text-2xl font-bold text-white">
+      <section id="text_overlay_wrapper"  className="relative flex flex-col ps-8 pe-4 lg:ms-20 sm:ms-4 px-4 pt-8 h-full  z-20 max-w-2xl">
+
+        <article id="weather" className="flex flex-row items-center justify-between bg-dark-azure-translucent rounded-2xl px-6 py-2 text-2xl font-bold text-white">
           <h2>🌧 Luneta, Metro Manila</h2>
           <details className="dropdown">
             <summary className="btn btn-light bg-gray-200 font-light m-1">Set location</summary>
@@ -27,26 +30,26 @@ function WeatherHero(){
               <li className="bg-dark-azure"><a>Kamuning</a></li>
             </ul>
           </details>
-        </div>
+        </article>
 
-        <div className="bg-grey-azure-translucent rounded-2xl mt-2 px-6 py-2 text-lg font-semibold text-white">
+        <article className="bg-grey-azure-translucent rounded-2xl mt-2 px-6 py-2 text-lg font-semibold text-white">
           <p>🌧 <b>Occasional Rains</b></p>
           <p>High: 31°C | Low: 31°C</p>
           <p><b>Sat</b>, Feb 14</p>
-        </div>
+        </article>
 
-        <div className="bg-gray-500/90 rounded-lg mt-2 ps-6 py-2 text-2xl font-semibold text-white">
+        <article className="bg-gray-500/90 rounded-lg mt-2 ps-6 py-2 text-2xl font-semibold text-white">
           <p className="text-sm font-">Bulletin: No Active Tropical Cyclone within the Philippine Area of Responsibility</p>
-        </div>
+        </article>
 
-        <div className="bg-red-400/80 rounded-2xl mt-2 px-6 py-2 text-2xl font-semibold text-white">
+        <article className="bg-red-400/80 rounded-2xl mt-2 px-6 py-2 text-2xl font-semibold text-white">
           <p className="uppercase"><b>Advisory</b> General Flood Warning is in effect</p>
-        </div>
+        </article>33
 
-      </div>
+      </section>
 
       <div className="relative flex-1 lg:flex-3 sm:flex-none" />
-    </div>
+    </section>
   )
 }
 
