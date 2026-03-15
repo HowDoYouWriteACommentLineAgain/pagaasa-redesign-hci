@@ -1,57 +1,89 @@
-import { type CSSProperties } from "react";
-import bg from '/images/Manila_skyline_day.jpg'
+import React, { useState } from 'react';
+import bg from '/images/Manila_skyline_day.jpg';
 
-// interface style{
-//   backgroundImages:String,
-//   backgroundSize:String,
-//   height:String,
-//   position:String,
-// }
-function WeatherHero(){
-  const bgInfo:CSSProperties = {
-    backgroundImage:`url(${bg})`
-  };
+function WeatherHero() {
+  const [showLocations, setShowLocations] = useState(false);
 
-  return(
-    <section className="relative flex flex-row items-center justify-center h-130 w-full">
-      <div style={bgInfo} className="absolute inset-0 bg-cover bg-center blur-[0.5px] z-0" />
+  return (
+    <section 
+      className="relative w-full h-auto md:h-[650px] flex items-center overflow-hidden"
+      style={{
+        backgroundImage: `url(${bg})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+      }}
+    >
+      {/* Background Overlay */}
+      <div className="absolute inset-0 bg-slate-900/70 md:bg-linear-to-r md:from-slate-950/90 md:via-slate-900/40 md:to-transparent z-10" />
 
-      {/* GRADIENT */}
-      <div className="absolute inset-0 bg-linear-to-r from-[#1a202c]/80 to-transparent" />
+      {/* MOBILE: py-10 makes the BG wrap tightly around the blocks.
+          DESKTOP: md:ms-20 keeps the original side-aligned look.
+      */}
+      <div className="relative z-20 w-full max-w-2xl px-5 py-10 md:py-0 md:ms-20 flex flex-col gap-2 md:gap-3">
+        
+        {/* 1. LOCATION & DROPDOWN */}
+        <div className="relative">
+          <article className="flex items-center justify-between bg-dark-azure-translucent rounded-xl px-4 py-2 text-white border border-white/10">
+            <div className="flex items-center gap-2">
+              {/* Proper Map Pin Icon */}
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-400">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                <circle cx="12" cy="10" r="3"></circle>
+              </svg>
+              <h2 className="text-base md:text-2xl font-bold tracking-tight">Luneta, Metro Manila</h2>
+            </div>
+            <button 
+              onClick={() => setShowLocations(!showLocations)}
+              className="p-1 hover:bg-white/10 rounded transition-all"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+          </article>
 
-      <section id="text_overlay_wrapper"  className="relative flex flex-col ps-8 pe-4 lg:ms-20 sm:ms-4 px-4 pt-8 h-full  z-20 max-w-2xl">
+          {showLocations && (
+            <div className="absolute top-full left-0 w-full mt-1 bg-slate-800 border border-white/10 rounded-lg shadow-2xl z-50">
+              {['Luneta', 'Kamuning', 'Quezon City'].map((loc) => (
+                <button 
+                  key={loc}
+                  className="w-full text-left px-4 py-2.5 text-sm text-white hover:bg-dark-azure border-b border-white/5 last:border-0"
+                  onClick={() => setShowLocations(false)}
+                >
+                  {loc}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
 
-        <article id="weather" className="flex flex-row items-center justify-between bg-dark-azure-translucent rounded-2xl px-6 py-2 text-2xl font-bold text-white">
-          <h2>🌧 Luneta, Metro Manila</h2>
-          <details className="dropdown">
-            <summary className="btn btn-light bg-gray-200 font-light m-1">Set location</summary>
-            <ul className="menu dropdown-content bg-dark-azure rounded-s-box z-1 w-52 p-2 shadow-sm">
-              <li className="bg-dark-azure"><a>Luneta</a></li>
-              <li className="bg-dark-azure"><a>Kamuning</a></li>
-            </ul>
-          </details>
+        {/* 2. MAIN WEATHER */}
+        <article className="bg-grey-azure-translucent rounded-xl px-4 py-3 md:py-5 text-white border border-white/5">
+          <p className="text-xl md:text-3xl font-black leading-tight">Occasional Rains</p>
+          <div className="flex items-center gap-2 text-xs md:text-lg opacity-90 font-medium mt-1">
+            <span>H: 31°C / L: 26°C</span>
+            <span className="opacity-30">•</span>
+            <span className="font-normal">Sat, Feb 14</span>
+          </div>
         </article>
 
-        <article className="bg-grey-azure-translucent rounded-2xl mt-2 px-6 py-2 text-lg font-semibold text-white">
-          <p>🌧 <b>Occasional Rains</b></p>
-          <p>High: 31°C | Low: 31°C</p>
-          <p><b>Sat</b>, Feb 14</p>
+        {/* 3. BULLETIN */}
+        <article className="bg-gray-500/50 rounded-lg px-4 py-1.5 text-white border border-white/5">
+          <p className="text-[10px] md:text-sm leading-tight">
+            <b className="opacity-70 uppercase text-[9px] mr-1">Bulletin:</b> 
+            No Active Tropical Cyclone within the PAR
+          </p>
         </article>
 
-        <article className="bg-gray-500/90 rounded-lg mt-2 ps-6 py-2 text-2xl font-semibold text-white">
-          <p className="text-sm font-">Bulletin: No Active Tropical Cyclone within the Philippine Area of Responsibility</p>
+        {/* 4. ADVISORY */}
+        <article className="bg-red-600/80 rounded-xl px-4 py-3 md:py-4 text-white shadow-xl">
+          <p className="text-sm md:text-2xl leading-snug font-bold">
+            <span className="font-black uppercase tracking-tighter bg-black/20 px-1.5 py-0.5 rounded mr-2 text-[9px] md:text-sm">Advisory</span> 
+            GENERAL FLOOD WARNING IS IN EFFECT
+          </p>
         </article>
 
-        <article className="bg-red-400/80 rounded-2xl mt-2 px-6 py-2 text-2xl font-semibold text-white">
-          <p className="uppercase"><b>Advisory</b> General Flood Warning is in effect</p>
-        </article>33
-
-      </section>
-
-      <div className="relative flex-1 lg:flex-3 sm:flex-none" />
+      </div>
     </section>
-  )
+  );
 }
 
 export default WeatherHero;
-
