@@ -1,3 +1,5 @@
+import Events from './components/Events'
+import FloodBasins from './components/FloodBasins'
 import Navigation from './components/Navigation'
 import Panahon from './components/Panahon'
 import WeatherHero from './components/WeatherHero'
@@ -8,7 +10,8 @@ function App() {
     <Navigation />
     <WeatherHero />
     <Panahon />
-    {/* <iframe className='w-screen h-screen' src="https://www.panahon.gov.ph/"></iframe> */}
+    <Events />
+    <FloodBasins />
    </> 
 
   )
