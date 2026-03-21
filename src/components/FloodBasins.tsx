@@ -67,28 +67,52 @@ export default function BasinForecast() {
     },
   ];
 
+  const getTrendIcon = (trend: string) => {
+    switch (trend) {
+      case "Rising":
+        return <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="currentColor" className="text-rose-500"><path d="M12 4l-8 8h5v8h6v-8h5z"/></svg>;
+      case "Falling":
+        return <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="currentColor" className="text-emerald-500"><path d="M12 20l8-8h-5V4H9v8H4z"/></svg>;
+      default:
+        return <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="currentColor" className="text-slate-400"><circle cx="12" cy="12" r="5"/></svg>;
+    }
+  };
+
+  const getStatusBg = (status: string) => {
+    switch (status) {
+      case "Alert": return "bg-rose-100 text-rose-700 border-rose-200";
+      case "Monitor": return "bg-amber-100 text-amber-700 border-amber-200";
+      default: return "bg-emerald-100 text-emerald-700 border-emerald-200";
+    }
+  };
+
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
-      <div className="bg-grey-azure px-6 py-4 flex items-center justify-between">
-        <h2 className="text-white font-black uppercase tracking-widest text-sm">
+    <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-md">
+      <div className="bg-grey-azure px-5 py-3.5 flex items-center justify-between">
+        <h2 className="text-white font-bold uppercase tracking-wide text-xs flex items-center gap-2.5">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+            <circle cx="12" cy="10" r="3"></circle>
+          </svg>
           Basin Hydrological Forecast
         </h2>
-        <span className="text-[10px] text-white/80 font-bold bg-dark-azure px-2 py-1 rounded">
+        <div className="flex items-center gap-2 text-[10px] text-white/90 font-medium">
+          <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span>
           LIVE UPDATES
-        </span>
+        </div>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full text-left border-collapse">
+      <div className="overflow-auto">
+        <table className="w-full text-left">
           <thead>
             <tr className="bg-slate-50 border-b border-slate-200">
-              <th className="px-6 py-3 text-[10px] font-black text-slate-400 uppercase tracking-tighter w-1/3">
+              <th className="px-5 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wide">
                 18 Major River Basins
               </th>
-              <th className="px-6 py-3 text-[10px] font-black text-slate-400 uppercase tracking-tighter">
+              <th className="px-5 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wide">
                 Current Level
               </th>
-              <th className="px-6 py-3 text-[10px] font-black text-slate-400 uppercase tracking-tighter text-right">
+              <th className="px-5 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wide text-right">
                 Forecast Status
               </th>
             </tr>
@@ -97,65 +121,50 @@ export default function BasinForecast() {
             {basins.map((basin, idx) => (
               <tr
                 key={idx}
-                className="hover:bg-grey-azure/10 transition-colors group"
+                className="hover:bg-slate-50 transition-colors"
               >
-                <td className="px-6 py-4">
+                <td className="px-5 py-3.5">
                   <div className="flex items-center gap-3">
                     <div
                       className={`w-1 h-8 rounded-full ${basin.region === "METRO" ? "bg-grey-azure" : "bg-dark-azure"}`}
                     />
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="font-bold text-slate-800 text-sm">
+                        <span className="font-semibold text-slate-800 text-sm">
                           {basin.name}
                         </span>
                         {basin.region === "METRO" && (
-                          <span className="text-[8px] bg-grey-azure/20 text-dark-azure px-1 font-black rounded uppercase">
+                          <span className="text-[8px] bg-grey-azure/20 text-grey-azure px-2 py-0.5 font-bold rounded uppercase">
                             Metro
                           </span>
                         )}
                       </div>
-                      <p className="text-[10px] text-slate-400 font-medium italic">
+                      <p className="text-xs text-slate-400 font-medium">
                         {basin.subtext}
                       </p>
                     </div>
                   </div>
                 </td>
 
-                <td className="px-6 py-4">
-                  <div className="flex flex-col">
-                    <span className="text-sm font-black text-slate-700">
+                <td className="px-5 py-3.5">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-bold text-slate-700">
                       {basin.level}
                     </span>
-                    <span
-                      className={`text-[9px] font-bold flex items-center gap-1 ${
-                        basin.trend === "Rising"
-                          ? "text-rose-500"
-                          : basin.trend === "Falling"
-                            ? "text-emerald-500"
-                            : "text-slate-400"
-                      }`}
-                    >
-                      {basin.trend === "Rising"
-                        ? "▲"
-                        : basin.trend === "Falling"
-                          ? "▼"
-                          : "●"}{" "}
-                      {basin.trend}
-                    </span>
+                    <div className="flex items-center gap-1 text-xs font-medium">
+                      {getTrendIcon(basin.trend)}
+                      <span className={
+                        basin.trend === "Rising" ? "text-rose-500" :
+                        basin.trend === "Falling" ? "text-emerald-500" : "text-slate-400"
+                      }>
+                        {basin.trend}
+                      </span>
+                    </div>
                   </div>
                 </td>
 
-                <td className="px-6 py-4 text-right">
-                  <span
-                    className={`inline-block px-3 py-1 rounded-full text-[10px] mx-auto text-nowrap font-black uppercase tracking-tight shadow-sm border ${
-                      basin.status === "Alert"
-                        ? "bg-rose-50 border-rose-200 text-rose-600 shadow-rose-100"
-                        : basin.status === "Monitor"
-                          ? "bg-orange-50 border-orange-200 text-orange-600"
-                          : "bg-grey-azure/10 border-grey-azure/20 text-dark-azure"
-                    }`}
-                  >
+                <td className="px-5 py-3.5 text-right">
+                  <span className={`inline-block px-3 py-1 rounded text-[9px] font-bold uppercase border ${getStatusBg(basin.status)}`}>
                     {basin.status}
                   </span>
                 </td>
@@ -165,16 +174,16 @@ export default function BasinForecast() {
         </table>
       </div>
 
-      <div className="bg-slate-50 px-6 py-3 border-t border-slate-200 flex gap-4">
-        <div className="flex items-center gap-1.5">
+      <div className="bg-slate-50 px-5 py-2.5 border-t border-slate-200 flex gap-5">
+        <div className="flex items-center gap-2">
           <div className="w-2 h-2 bg-grey-azure rounded-full" />
-          <span className="text-[9px] font-bold text-slate-500 uppercase">
+          <span className="text-[10px] font-medium text-slate-600 uppercase">
             Metro Center
           </span>
         </div>
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-2">
           <div className="w-2 h-2 bg-dark-azure rounded-full" />
-          <span className="text-[9px] font-bold text-slate-500 uppercase">
+          <span className="text-[10px] font-medium text-slate-600 uppercase">
             Agricultural Basin
           </span>
         </div>

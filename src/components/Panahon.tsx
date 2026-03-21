@@ -7,8 +7,6 @@ function Panahon() {
   const handleUnlock = () => {
     setIsLocked(false);
     
-    // This snaps the screen to the map container
-    // 'nearest' or 'center' ensures the button isn't obscured
     if (mapSectionRef.current) {
       mapSectionRef.current.scrollIntoView({ 
         behavior: "smooth", 
@@ -19,13 +17,12 @@ function Panahon() {
 
   return (
     <div className="relative w-full overflow-x-hidden">
-      {/* MOBILE RE-LOCK BUTTON */}
       {!isLocked && (
         <button 
           onClick={() => setIsLocked(true)}
-          className="fixed bottom-6 right-6 z-[100] bg-red-600 text-white px-5 py-3 rounded-full shadow-2xl font-bold flex items-center gap-2 border-2 border-white/20 active:scale-95 transition-transform md:hidden"
+          className="fixed bottom-6 right-6 z-[100] bg-red-600 text-white px-5 py-3 rounded-lg shadow-xl font-bold flex items-center gap-2 md:hidden"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
           Finish Exploring
         </button>
       )}
@@ -34,37 +31,35 @@ function Panahon() {
         className="flex flex-col items-center w-full" 
         onMouseLeave={() => setIsLocked(true)}
       >
-        {/* Added ref and scroll-margin-top for the snap behavior */}
         <div 
           ref={mapSectionRef} 
           className="relative w-full scroll-mt-10"
         >
-          {/* THE OVERLAY */}
           {isLocked && (
             <div 
               onClick={handleUnlock}
-              className="absolute inset-0 z-30 flex items-center justify-center cursor-pointer backdrop-blur-[2px] bg-slate-900/10"
+              className="absolute inset-0 z-30 flex items-center justify-center cursor-pointer bg-slate-900/30 backdrop-blur-[2px]"
             >
-                        <div className="bg-dark-azure text-white px-8 py-4 rounded-full shadow-2xl border border-white/20 text-center animate-in fade-in zoom-in duration-300">
-                <p className="text-xl font-black tracking-widest uppercase">Tap to Unlock Map</p>
+              <div className="bg-dark-azure text-white px-8 py-4 rounded-lg shadow-xl border border-white/10 text-center">
+                <p className="text-lg font-bold uppercase tracking-wide">Tap to Unlock Map</p>
                 <p className="text-xs opacity-60 mt-1">Interaction mode will be enabled</p>
               </div>
             </div>
           )}
 
-          {/* IFRAME */}
           <iframe 
-            className={`w-full h-[500px] md:h-[640px] rounded-2xl border-4 border-[#1a2e35] shadow-2xl bg-white transition-all duration-500 ${
-              isLocked ? 'pointer-events-none opacity-80 grayscale-[20%]' : 'pointer-events-auto opacity-100 grayscale-0'
+            className={`w-full h-[450px] md:h-[600px] rounded-lg shadow-xl transition-all duration-500 ${
+              isLocked 
+                ? 'border-4 border-slate-700 pointer-events-none opacity-80 grayscale-[15%] grayscale' 
+                : 'border-4 border-slate-600 pointer-events-auto opacity-100'
             }`}
             src="https://www.panahon.gov.ph/" 
             title="PAGASA Live Site"
           />
         </div>
 
-        {/* BOTTOM SECTION */}
         <div className="mt-6 text-center pb-4">
-          <p className="text-xs md:text-sm text-white/40">
+          <p className="text-[10px] text-white/30 font-medium">
             © 2026 ECMWF Data | © PANaHON PAGASA
           </p>
         </div>

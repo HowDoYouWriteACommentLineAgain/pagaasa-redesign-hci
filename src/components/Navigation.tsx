@@ -1,22 +1,49 @@
 import { useState } from 'react';
 
+const NAV_ITEMS = [
+  ['HOME', 'home'],
+  ['FORECAST', 'forecast'],
+  ['ASTROLOGY', 'astrology'],
+  ['ADVISORY', 'advisory'],
+  ['BULLETIN', 'bulletin'],
+] as const;
+
 function Navigation() {
   const [isOpen, setIsOpen] = useState(false);
 
+  const scrollToSection = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
+    e.preventDefault();
+    setIsOpen(false);
+    const el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      try {
+        window.history.pushState(null, '', `#${id}`);
+      } catch {
+        /* file:// or restricted contexts can throw */
+      }
+    }
+  };
+
   return (
-    <nav className="bg-dark-azure px-4 md:px-6 py-4 z-50 relative w-full">
+    <nav className="sticky top-0 z-50 w-full bg-dark-azure px-4 md:px-6 py-4 shadow-md shadow-black/20 relative">
       <div className="flex justify-between items-center w-full">
         
         {/* Logo Section */}
-        <div id="logo_section" className="flex items-center gap-3 md:gap-5">
+        <a
+          href="#home"
+          id="logo_section"
+          className="flex items-center gap-3 md:gap-5 shrink-0 rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
+          onClick={(e) => scrollToSection(e, 'home')}
+        >
           <img src="images/logo.png" width={50} alt="PAGASA LOGO" className="md:w-17.5 shrink-0" />
-          <div className="text-white">
+          <div className="text-white text-left">
             <h3 className="font-extralight text-[10px] md:text-[12px] leading-tight max-w-40 md:max-w-60">
               Department of Science and Technology
             </h3>
             <h2 className="font-bold text-xl md:text-2xl leading-none">PAGASA</h2>
           </div>
-        </div>
+        </a>
 
         {/* Hamburger Button (Mobile Only) */}
         <button 
@@ -42,14 +69,14 @@ function Navigation() {
           ${isOpen ? 'block opacity-100' : 'hidden md:flex opacity-0 md:opacity-100'}
           text-white text-lg md:text-xl font-light
         `}>
-          {['HOME', 'FORECAST', 'ASTRONOMY', 'ADVISORY', 'BULLETIN'].map((link) => (
-            <a 
-              key={link} 
-              href="#" 
-              className="py-3 md:px-3 md:py-1 hover:bg-white/10 md:hover:bg-transparent md:hover:opacity-80 border-b border-white/10 md:border-none"
-              onClick={()=>setIsOpen(p=>!p)}
+          {NAV_ITEMS.map(([label, id]) => (
+            <a
+              key={id}
+              href={`#${id}`}
+              className="py-3 md:px-3 md:py-1 hover:bg-white/10 md:hover:bg-transparent md:hover:underline md:underline-offset-4 border-b border-white/10 md:border-none text-white/95 hover:text-white"
+              onClick={(e) => scrollToSection(e, id)}
             >
-              {link}
+              {label}
             </a>
           ))}
         </div>

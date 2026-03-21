@@ -85,7 +85,6 @@ interface BulletinItem {
     img: string;
 }
 
-// Fixed the scroll function to match your desktop card width (420px + gap)
 const scroll = (ref: React.RefObject<HTMLDivElement | null>, direction: string) => {
     if (ref.current) {
         const move = direction === 'left' ? -432 : 432; 
@@ -123,73 +122,68 @@ function CarouselRow({ title, items, rowRef }: { title: string, items: BulletinI
 
     return (
         <div className="relative w-full overflow-hidden">
-            {/* Row Header with Navigation */}
             <div className="flex items-end justify-between mb-6 px-1">
                 <div className="flex flex-col gap-1.5">
-                    <h3 className="text-[10px] font-black tracking-[0.3em] text-slate-400 uppercase leading-none">{title}</h3>
-                    <div className="w-24 h-1 bg-slate-100 rounded-full overflow-hidden">
+                    <h3 className="text-[10px] font-bold tracking-[0.2em] text-white/50 uppercase leading-none">{title}</h3>
+                    <div className="w-24 h-1 bg-white/10 rounded-full overflow-hidden">
                         <div 
-                            className="h-full bg-grey-azure transition-all duration-300" 
+                            className="h-full bg-grey-azure transition-all duration-300 rounded-full" 
                             style={{ width: `${scrollProgress}%` }}
                         />
                     </div>
                 </div>
 
-                {/* THE PULSATING PILL (Desktop Only) */}
-                <div className="hidden md:block relative">
-                    <div className="absolute -inset-1 bg-grey-azure/20 rounded-full animate-pulse blur-sm"></div>
-                    <div className="relative flex items-center bg-white border border-slate-200 rounded-full p-1 shadow-sm">
-                        <button 
-                            onClick={() => scroll(rowRef, 'left')} 
-                            className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-slate-50 text-slate-600 transition-colors active:scale-90"
-                        >
-                            <span className="font-bold text-lg">←</span>
-                        </button>
-                        <div className="w-[1px] h-5 bg-slate-200 mx-1"></div>
-                        <button 
-                            onClick={() => scroll(rowRef, 'right')} 
-                            className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-slate-50 text-slate-600 transition-colors active:scale-90"
-                        >
-                            <span className="font-bold text-lg">→</span>
-                        </button>
-                    </div>
+                <div className="hidden md:flex items-center gap-2">
+                    <button 
+                        onClick={() => scroll(rowRef, 'left')} 
+                        className="w-8 h-8 flex items-center justify-center rounded bg-white/10 text-white/70 hover:bg-white/20 hover:text-white transition-all"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                    </button>
+                    <button 
+                        onClick={() => scroll(rowRef, 'right')} 
+                        className="w-8 h-8 flex items-center justify-center rounded bg-white/10 text-white/70 hover:bg-white/20 hover:text-white transition-all"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    </button>
                 </div>
             </div>
 
-            {/* Scrollable Row */}
             <div 
                 ref={rowRef} 
                 onScroll={handleScroll}
-                className="flex gap-3 overflow-x-auto snap-x snap-mandatory no-scrollbar pb-6 ms-1 -mx-6 px-6"
+                className="flex gap-4 overflow-x-auto snap-x snap-mandatory no-scrollbar pb-6 ms-1 -mx-6 px-6"
             >
                 {items.map(item => (
                     <div 
                         key={item.id} 
-                        className="flex-none w-[280px] md:w-[420px] snap-start bg-white rounded-2xl border border-slate-200 overflow-hidden flex h-28 md:h-32 shadow-sm"
+                        className="flex-none w-[280px] md:w-[400px] snap-start bg-white/10 border border-white/10 rounded-lg overflow-hidden flex h-28 md:h-32 shadow-md hover:bg-white/15 hover:shadow-lg transition-all cursor-pointer group"
                     >
-                        {/* 1. DATE Block */}
-                        <div className={`${item.color} w-[60px] md:w-[80px] flex flex-col items-center justify-center text-white flex-shrink-0`}>
-                            <span className="text-[9px] font-bold opacity-80 uppercase leading-none">{item.mo}</span>
-                            <span className="text-xl md:text-3xl font-black leading-tight">{item.date}</span>
+                        <div className={`${item.color} w-[60px] md:w-[75px] flex flex-col items-center justify-center text-white flex-shrink-0`}>
+                            <span className="text-[9px] font-bold opacity-70 uppercase">{item.mo}</span>
+                            <span className="text-xl md:text-3xl font-black">{item.date}</span>
                         </div>
                         
-                        {/* 2. THUMBNAIL Block */}
-                        <div className="w-[80px] md:w-[120px] flex-shrink-0 relative overflow-hidden border-r border-slate-50">
+                        <div className="w-[70px] md:w-[100px] flex-shrink-0 relative overflow-hidden">
                             <img src={item.img} className="absolute inset-0 w-full h-full object-cover" alt="thumb" />
                         </div>
 
-                        {/* 3. TEXT Block */}
-                        <div className="p-3 flex flex-col justify-center flex-grow min-w-0 bg-white">
-                            <div className="flex items-center gap-2 mb-1">
-                                <span className={`text-[7px] font-black px-1.5 py-0.5 rounded-sm inline-block w-fit text-white ${item.color} uppercase`}>
+                        <div className="p-3 flex flex-col justify-center flex-grow min-w-0 bg-dark-azure/50">
+                            <div className="flex items-center gap-1.5 mb-1">
+                                <span className={`text-[7px] font-bold px-1.5 py-0.5 rounded text-white ${item.color}`}>
                                     {item.cat}
                                 </span>
-                                {item.live && <span className="w-1.5 h-1.5 bg-rose-500 rounded-full animate-pulse"></span>}
+                                {item.live && (
+                                    <span className="flex items-center gap-1 text-[8px] text-rose-400 font-bold">
+                                        <span className="w-1 h-1 bg-rose-400 rounded-full animate-pulse"></span>
+                                        LIVE
+                                    </span>
+                                )}
                             </div>
-                            <h4 className="text-[12px] md:text-sm font-bold text-slate-800 leading-tight mb-1 truncate">
+                            <h4 className="text-xs md:text-sm font-semibold text-white leading-tight mb-0.5 truncate">
                                 {item.title}
                             </h4>
-                            <p className="text-[10px] text-slate-400 line-clamp-2 leading-snug">
+                            <p className="text-[9px] md:text-[10px] text-white/50 line-clamp-2 leading-tight">
                                 {item.detail}
                             </p>
                         </div>

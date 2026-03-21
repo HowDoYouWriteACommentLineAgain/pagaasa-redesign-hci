@@ -1,80 +1,228 @@
-import Events from './components/Events'
-import FloodBasins from './components/FloodBasins'
-import FloodBulletins from './components/FloodBulletins'
-import Navigation from './components/Navigation'
-import Panahon from './components/Panahon'
-import WeatherHero from './components/WeatherHero'
+import { useEffect } from "react";
+import AgriWeather from "./components/AgriWeather";
+import Astronomy from "./components/Astronomy";
+import Events from "./components/Events";
+import FloodBasins from "./components/FloodBasins";
+import FloodBulletins from "./components/FloodBulletins";
+import Navigation from "./components/Navigation";
+import Panahon from "./components/Panahon";
+import WeatherHero from "./components/WeatherHero";
 
-function SectionHeading({ icon, title, subtitle }: { icon: React.ReactNode, title: string, subtitle?: string }) {
+function SectionHeading({
+  icon,
+  title,
+  subtitle,
+  dark = false,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  subtitle?: string;
+  dark?: boolean;
+}) {
   return (
     <div className="flex items-center gap-4 mb-6">
-      <div className="p-3 rounded-xl bg-grey-azure shadow-lg">
+      <div
+        className={`p-2.5 rounded-lg shadow-md ${dark ? "bg-white/10" : "bg-dark-azure"}`}
+      >
         {icon}
       </div>
       <div>
-        <h2 className="text-2xl md:text-3xl font-black text-dark-azure tracking-tight">{title}</h2>
-        {subtitle && <p className="text-xs text-slate-400 font-medium">{subtitle}</p>}
+        <h2
+          className={`text-xl md:text-2xl font-bold ${dark ? "text-white" : "text-dark-azure"}`}
+        >
+          {title}
+        </h2>
+        {subtitle && (
+          <p className={`text-xs ${dark ? "text-white/50" : "text-slate-400"}`}>
+            {subtitle}
+          </p>
+        )}
       </div>
-      <div className="flex-1 h-px bg-gradient-to-r from-grey-azure/30 to-transparent ml-4" />
     </div>
   );
 }
 
 function App() {
+  useEffect(() => {
+    const raw = window.location.hash.replace(/^#/, "");
+    if (!raw) return;
+    const id = raw === "astronomy" ? "astrology" : raw;
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: "auto", block: "start" });
+  }, []);
+
   return (
     <div className="min-h-screen bg-slate-100">
       <Navigation />
       <WeatherHero />
-      
-      {/* SECTION: Weather Map */}
-      <section className="bg-grey-azure py-12 md:py-16">
+
+      {/* SECTION: Forecast — Live Weather Map */}
+      <section
+        id="forecast"
+        className="bg-grey-azure py-12 md:py-16 scroll-mt-[4.5rem]"
+      >
         <div className="max-w-7xl mx-auto px-4 md:px-6">
-          <SectionHeading 
+          <SectionHeading
             icon={
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
                 <circle cx="12" cy="12" r="10"></circle>
                 <line x1="2" y1="12" x2="22" y2="12"></line>
                 <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
               </svg>
             }
-            title="Live Weather Map"
-            subtitle="Interactive data from PAGASA"
+            title="Forecast"
+            subtitle="Live weather map — interactive data from PAGASA"
+            dark={true}
           />
           <Panahon />
         </div>
       </section>
 
-      {/* SECTION: Flood Advisories */}
-      <section className="bg-slate-100 py-12 md:py-16">
+      {/* SECTION: Astrology (nav: ASTROLOGY) — old #astronomy scrolls here */}
+      <section
+        id="astrology"
+        className="bg-slate-900 py-12 md:py-16 scroll-mt-[4.5rem] border-y border-white/10"
+      >
         <div className="max-w-7xl mx-auto px-4 md:px-6">
-          <SectionHeading 
+          <SectionHeading
+            dark
             icon={
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
+                <path d="M19 3v4"></path>
+                <path d="M21 5h-4"></path>
+              </svg>
+            }
+            title="Astrology & sky calendar"
+            subtitle="Today, what’s next, and separate timelines for each kind of event"
+          />
+          <Astronomy />
+        </div>
+      </section>
+
+      {/* SECTION: Advisory — basin monitoring (nav: ADVISORY) */}
+      <section id="advisory" className="bg-white py-12 md:py-16 scroll-mt-[4.5rem] shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 md:px-6">
+          <SectionHeading
+            icon={
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                <path d="m9 12 2 2 4-4"></path>
+              </svg>
+            }
+            title="Advisory"
+            subtitle="River basin levels and flood-watch status for planning and response"
+          />
+          <FloodBasins />
+        </div>
+      </section>
+
+      {/* SECTION: Bulletin — flood bulletins (nav: BULLETIN) */}
+      <section
+        id="bulletin"
+        className="bg-amber-50/60 py-12 md:py-16 scroll-mt-[4.5rem] border-y border-amber-200/50"
+      >
+        <div className="max-w-7xl mx-auto px-4 md:px-6">
+          <SectionHeading
+            icon={
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
                 <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
                 <line x1="12" y1="9" x2="12" y2="13"></line>
                 <line x1="12" y1="17" x2="12.01" y2="17"></line>
               </svg>
             }
-            title="Flood Advisories"
-            subtitle="Real-time basin monitoring and flood warnings"
+            title="Bulletin"
+            subtitle="Issued flood bulletins and imminent-threat notices by basin"
           />
           <FloodBulletins />
         </div>
       </section>
 
-      {/* SECTION: Basin Forecast Table */}
-      <section className="bg-slate-100 pb-12 md:pb-16">
+      {/* SECTION: Agri Weather */}
+      <section className="bg-slate-100 py-12 md:py-16">
         <div className="max-w-7xl mx-auto px-4 md:px-6">
-          <FloodBasins />
+          <SectionHeading
+            icon={
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M12 22V8"></path>
+                <path d="M5 12H2a10 10 0 0 0 20 0h-3"></path>
+                <path d="M8 8a4 4 0 1 1 8 0"></path>
+              </svg>
+            }
+            title="Agri Weather"
+            subtitle="Helping farmers and agricultural centers make informed decisions"
+          />
+          <AgriWeather />
         </div>
       </section>
 
       {/* SECTION: News & Events */}
       <section className="bg-dark-azure py-12 md:py-16">
         <div className="max-w-7xl mx-auto px-4 md:px-6">
-          <SectionHeading 
+          <SectionHeading
+            dark
             icon={
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
                 <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"></path>
                 <path d="M18 14h-8"></path>
                 <path d="M15 18h-5"></path>
@@ -88,7 +236,7 @@ function App() {
         </div>
       </section>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;

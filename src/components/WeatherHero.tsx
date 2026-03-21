@@ -1,14 +1,19 @@
 import { useState } from 'react';
-import bg from '/images/Manila_skyline_day.jpg';
+
+/** Put `public/images/Manila_skyline_day.jpg` in your project for a local hero; otherwise this URL loads. */
+const HERO_FALLBACK =
+  'https://images.unsplash.com/photo-1519501025268-2ba15a9b7e9a?auto=format&fit=crop&q=80&w=1920';
 
 function WeatherHero() {
   const [showLocations, setShowLocations] = useState(false);
+  const localHero = `${import.meta.env.BASE_URL}images/Manila_skyline_day.jpg`;
 
   return (
     <section 
-      className="relative w-full h-auto md:h-[650px] flex items-center overflow-hidden"
+      id="home"
+      className="relative w-full h-auto md:h-[650px] flex items-center overflow-hidden scroll-mt-[4.5rem]"
       style={{
-        backgroundImage: `url(${bg})`,
+        backgroundImage: `linear-gradient(90deg, rgba(15,23,42,0.88) 0%, rgba(15,23,42,0.45) 55%, rgba(15,23,42,0.2) 100%), url(${localHero}), url(${HERO_FALLBACK})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
       }}
