@@ -18,7 +18,7 @@ function Panahon() {
   };
 
   return (
-    <section className="relative w-full bg-grey-azure overflow-x-hidden">
+    <div className="relative w-full overflow-x-hidden">
       {/* MOBILE RE-LOCK BUTTON */}
       {!isLocked && (
         <button 
@@ -31,13 +31,13 @@ function Panahon() {
       )}
 
       <div 
-        className="flex flex-col items-center w-full px-4 py-8 md:px-8" 
+        className="flex flex-col items-center w-full" 
         onMouseLeave={() => setIsLocked(true)}
       >
         {/* Added ref and scroll-margin-top for the snap behavior */}
         <div 
           ref={mapSectionRef} 
-          className="relative w-full max-w-7xl scroll-mt-10"
+          className="relative w-full scroll-mt-10"
         >
           {/* THE OVERLAY */}
           {isLocked && (
@@ -45,7 +45,7 @@ function Panahon() {
               onClick={handleUnlock}
               className="absolute inset-0 z-30 flex items-center justify-center cursor-pointer backdrop-blur-[2px] bg-slate-900/10"
             >
-              <div className="bg-gray-800/95 text-white px-8 py-4 rounded-full shadow-2xl border border-white/20 text-center animate-in fade-in zoom-in duration-300">
+                        <div className="bg-dark-azure text-white px-8 py-4 rounded-full shadow-2xl border border-white/20 text-center animate-in fade-in zoom-in duration-300">
                 <p className="text-xl font-black tracking-widest uppercase">Tap to Unlock Map</p>
                 <p className="text-xs opacity-60 mt-1">Interaction mode will be enabled</p>
               </div>
@@ -63,13 +63,13 @@ function Panahon() {
         </div>
 
         {/* BOTTOM SECTION */}
-        <div className="mt-6 text-center pb-10">
-          <p className="text-xs md:text-sm text-slate-400">
+        <div className="mt-6 text-center pb-4">
+          <p className="text-xs md:text-sm text-white/40">
             © 2026 ECMWF Data | © PANaHON PAGASA
           </p>
         </div>
       </div>
-    </section>
+    </div>
   );
 }
 

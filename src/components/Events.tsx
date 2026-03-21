@@ -1,17 +1,17 @@
 import React, { useState } from "react";
 
     const weatherEvents: BulletinItem[] = [
-        { id: 1, cat: "REGIONAL", tag: "AMAYAN", title: "Cagayan Valley Heat Surge", detail: "Daytime temperatures hitting 38°C. Stay hydrated.", date: "15", mo: "MAR", color: "bg-orange-600", live: true, img: "https://images.unsplash.com/photo-1504333638930-c8787321eee0?auto=format&fit=crop&q=80&w=150" },
-        { id: 2, cat: "NATIONAL", tag: "MONSOON", title: "Northeast Monsoon (Amihan)", detail: "Light rains over Metro Manila & Eastern Luzon.", date: "15", mo: "MAR", color: "bg-blue-600", live: false, img: "https://images.unsplash.com/photo-1515694346937-94d85e41e6f0?auto=format&fit=crop&q=80&w=150" },
-        { id: 3, cat: "CLIMATE", tag: "ENS0", title: "La Niña Episode Ends", detail: "PAGASA lowers status to ENSO-Neutral levels.", date: "09", mo: "MAR", color: "bg-emerald-600", live: false, img: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&q=80&w=150" },
-        { id: 4, cat: "WARNING", tag: "DROUGHT", title: "Angat Rainfall Deficit", detail: "20-70mm drop expected in Central Luzon basin.", date: "14", mo: "MAR", color: "bg-rose-700", live: true, img: "https://images.unsplash.com/photo-1508817628294-5a453fa0b8fb?auto=format&fit=crop&q=80&w=150" }
+        { id: 1, cat: "REGIONAL", tag: "AMAYAN", title: "Cagayan Valley Heat Surge", detail: "Daytime temperatures hitting 38°C. Stay hydrated.", date: "15", mo: "MAR", color: "bg-grey-azure", live: true, img: "https://images.unsplash.com/photo-1504333638930-c8787321eee0?auto=format&fit=crop&q=80&w=150" },
+        { id: 2, cat: "NATIONAL", tag: "MONSOON", title: "Northeast Monsoon (Amihan)", detail: "Light rains over Metro Manila & Eastern Luzon.", date: "15", mo: "MAR", color: "bg-grey-azure", live: false, img: "https://images.unsplash.com/photo-1515694346937-94d85e41e6f0?auto=format&fit=crop&q=80&w=150" },
+        { id: 3, cat: "CLIMATE", tag: "ENS0", title: "La Niña Episode Ends", detail: "PAGASA lowers status to ENSO-Neutral levels.", date: "09", mo: "MAR", color: "bg-grey-azure", live: false, img: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&q=80&w=150" },
+        { id: 4, cat: "WARNING", tag: "DROUGHT", title: "Angat Rainfall Deficit", detail: "20-70mm drop expected in Central Luzon basin.", date: "14", mo: "MAR", color: "bg-dark-azure", live: true, img: "https://images.unsplash.com/photo-1508817628294-5a453fa0b8fb?auto=format&fit=crop&q=80&w=150" }
     ];
 
-    const astroEvents: BulletinItem[] = [
-        { id: 5, cat: "ASTRONOMY", tag: "ECLIPSE", title: "Total Lunar Eclipse Recap", detail: "Last photos of the Blood Moon from Manila Observatory.", date: "03", mo: "MAR", color: "bg-purple-700", live: false, img: "https://images.unsplash.com/photo-1532693322450-2cb5c511067d?auto=format&fit=crop&q=80&w=150" },
-        { id: 6, cat: "SPACE", tag: "METEOR", title: "γ-Normid Meteor Shower", detail: "Peak activity visible tonight in dark-sky areas.", date: "15", mo: "MAR", color: "bg-indigo-600", live: true, img: "https://images.unsplash.com/photo-1538370965046-73c03673c163?auto=format&fit=crop&q=80&w=150" },
-        { id: 7, cat: "EQUINOX", tag: "SEASON", title: "March Vernal Equinox", detail: "Equal day and night across PH on March 20, 10:46 PM.", date: "20", mo: "MAR", color: "bg-teal-600", live: false, img: "https://images.unsplash.com/photo-1433838552652-f9a46b332c40?auto=format&fit=crop&q=80&w=150" },
-        { id: 8, cat: "PLANETARY", tag: "VENUS", title: "Moon-Venus Conjunction", detail: "Visible low in western horizon shortly after sunset.", date: "20", mo: "MAR", color: "bg-pink-600", live: false, img: "https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?auto=format&fit=crop&q=80&w=150" }
+const astroEvents: BulletinItem[] = [
+        { id: 5, cat: "ASTRONOMY", tag: "ECLIPSE", title: "Total Lunar Eclipse Recap", detail: "Last photos of the Blood Moon from Manila Observatory.", date: "03", mo: "MAR", color: "bg-dark-azure", live: false, img: "https://images.unsplash.com/photo-1532693322450-2cb5c511067d?auto=format&fit=crop&q=80&w=150" },
+        { id: 6, cat: "SPACE", tag: "METEOR", title: "γ-Normid Meteor Shower", detail: "Peak activity visible tonight in dark-sky areas.", date: "15", mo: "MAR", color: "bg-grey-azure", live: true, img: "https://images.unsplash.com/photo-1538370965046-79d8d0e1be73?auto=format&fit=crop&q=80&w=150" },
+        { id: 7, cat: "EQUINOX", tag: "SEASON", title: "March Vernal Equinox", detail: "Equal day and night across PH on March 20, 10:46 PM.", date: "20", mo: "MAR", color: "bg-dark-azure", live: false, img: "https://images.unsplash.com/photo-1433838552652-f9a46b332c40?auto=format&fit=crop&q=80&w=150" },
+        { id: 8, cat: "PLANETARY", tag: "VENUS", title: "Moon-Venus Conjunction", detail: "Visible low in western horizon shortly after sunset.", date: "20", mo: "MAR", color: "bg-grey-azure", live: false, img: "https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?auto=format&fit=crop&q=80&w=150" }
     ];
 
     const govNews: BulletinItem[] = [
@@ -22,7 +22,7 @@ import React, { useState } from "react";
         detail: "DOST announces PHP 500M fund for local government units to build resilient storm shelters.", 
         date: "12", 
         mo: "MAR", 
-        color: "bg-slate-700", 
+        color: "bg-dark-azure", 
         live: false, 
         img: "https://images.unsplash.com/photo-1526628953301-3e589a6a8b74?auto=format&fit=crop&q=80&w=150" 
     },
@@ -33,7 +33,7 @@ import React, { useState } from "react";
         detail: "New Doppler radar in Catanduanes completed; increases tracking accuracy for Eastern seaboard.", 
         date: "14", 
         mo: "MAR", 
-        color: "bg-cyan-700", 
+        color: "bg-grey-azure", 
         live: true, 
         img: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=150" 
     },
@@ -44,7 +44,7 @@ import React, { useState } from "react";
         detail: "Standardized weather safety curriculum to be integrated into K-12 Science modules by June.", 
         date: "10", 
         mo: "MAR", 
-        color: "bg-indigo-800", 
+        color: "bg-dark-azure", 
         live: false, 
         img: "https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format&fit=crop&q=80&w=150" 
     },
@@ -55,7 +55,7 @@ import React, { useState } from "react";
         detail: "Registration opens for the 2026 National Meteorological Convention in Pasay City.", 
         date: "05", 
         mo: "MAR", 
-        color: "bg-emerald-800", 
+        color: "bg-grey-azure", 
         live: false, 
         img: "https://images.unsplash.com/photo-1540575861501-7cf05a4b125a?auto=format&fit=crop&q=80&w=150" 
     },
@@ -66,7 +66,7 @@ import React, { useState } from "react";
         detail: "PRC announces top performers for the March 2026 Board Exam; 84% national passing rate.", 
         date: "15", 
         mo: "MAR", 
-        color: "bg-slate-600", 
+        color: "bg-dark-azure", 
         live: true, 
         img: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&q=80&w=150" 
     }
@@ -98,17 +98,15 @@ export default function Articles() {
     const scrollRef2 = React.useRef<HTMLDivElement | null>(null);
     const scrollRef3 = React.useRef<HTMLDivElement | null>(null);
 
-    // ... (your weatherEvents, astroEvents, and govNews data arrays)
-
     return (
-        <section className="py-12 bg-slate-50 px-6">
-            <div className="max-w-7xl mx-auto space-y-20">
+        <>
+            <style>{`.no-scrollbar::-webkit-scrollbar { display: none; } .no-scrollbar { scrollbar-width: none; }`}</style>
+            <div className="space-y-12">
                 <CarouselRow title="Weather & Climate Advisories" items={weatherEvents} rowRef={scrollRef1} />
                 <CarouselRow title="Astronomical Phenomena" items={astroEvents} rowRef={scrollRef2} />
                 <CarouselRow title="Government News" items={govNews} rowRef={scrollRef3} />
             </div>
-            <style>{`.no-scrollbar::-webkit-scrollbar { display: none; } .no-scrollbar { scrollbar-width: none; }`}</style>
-        </section>
+        </>
     );
 }
 
@@ -131,7 +129,7 @@ function CarouselRow({ title, items, rowRef }: { title: string, items: BulletinI
                     <h3 className="text-[10px] font-black tracking-[0.3em] text-slate-400 uppercase leading-none">{title}</h3>
                     <div className="w-24 h-1 bg-slate-100 rounded-full overflow-hidden">
                         <div 
-                            className="h-full bg-blue-600 transition-all duration-300" 
+                            className="h-full bg-grey-azure transition-all duration-300" 
                             style={{ width: `${scrollProgress}%` }}
                         />
                     </div>
@@ -139,7 +137,7 @@ function CarouselRow({ title, items, rowRef }: { title: string, items: BulletinI
 
                 {/* THE PULSATING PILL (Desktop Only) */}
                 <div className="hidden md:block relative">
-                    <div className="absolute -inset-1 bg-blue-400/20 rounded-full animate-pulse blur-sm"></div>
+                    <div className="absolute -inset-1 bg-grey-azure/20 rounded-full animate-pulse blur-sm"></div>
                     <div className="relative flex items-center bg-white border border-slate-200 rounded-full p-1 shadow-sm">
                         <button 
                             onClick={() => scroll(rowRef, 'left')} 

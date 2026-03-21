@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import bg from '/images/Manila_skyline_day.jpg';
 
 function WeatherHero() {

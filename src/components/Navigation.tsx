@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 function Navigation() {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <nav className="bg-dark-azure px-5 py-4 z-50 relative">
-      <div className="flex justify-between items-center max-w-7xl mx-auto">
+    <nav className="bg-dark-azure px-4 md:px-6 py-4 z-50 relative w-full">
+      <div className="flex justify-between items-center w-full">
         
         {/* Logo Section */}
         <div id="logo_section" className="flex items-center gap-3 md:gap-5">
