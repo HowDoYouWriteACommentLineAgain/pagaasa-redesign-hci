@@ -31,10 +31,10 @@ function Panahon() {
         className="flex flex-col items-center w-full" 
         onMouseLeave={() => setIsLocked(true)}
       >
-        <div 
-          ref={mapSectionRef} 
-          className="relative w-full scroll-mt-10"
-        >
+          <div 
+            ref={mapSectionRef} 
+            className="relative w-full md:scroll-mt-28 scroll-mt-10"
+          >
           {isLocked && (
             <div 
               onClick={handleUnlock}

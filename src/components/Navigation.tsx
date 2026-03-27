@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 const NAV_ITEMS = [
   ['HOME', 'home'],
@@ -10,6 +10,15 @@ const NAV_ITEMS = [
 
 function Navigation() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 50);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const scrollToSection = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
     e.preventDefault();
@@ -26,22 +35,28 @@ function Navigation() {
   };
 
   return (
-    <nav className="sticky top-0 z-50 w-full bg-dark-azure px-4 md:px-6 py-4 shadow-md shadow-black/20 relative">
+    <nav className={`sticky top-0 z-50 w-full bg-dark-azure px-4 md:px-6 shadow-md shadow-black/20 relative transition-all duration-300 ${isScrolled ? 'py-2' : 'py-4'}`}>
       <div className="flex justify-between items-center w-full">
         
         {/* Logo Section */}
         <a
           href="#home"
           id="logo_section"
-          className="flex items-center gap-3 md:gap-5 shrink-0 rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
+          className="flex items-center gap-2 md:gap-5 shrink-0 rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 transition-all duration-300"
           onClick={(e) => scrollToSection(e, 'home')}
         >
-          <img src="images/logo.png" width={50} alt="PAGASA LOGO" className="md:w-17.5 shrink-0" />
-          <div className="text-white text-left">
-            <h3 className="font-extralight text-[10px] md:text-[12px] leading-tight max-w-40 md:max-w-60">
+          <img 
+            src="images/logo.png" 
+            alt="PAGASA LOGO" 
+            className={`shrink-0 transition-all duration-300 ${isScrolled ? 'w-8 md:w-12' : 'w-12 md:w-[50px]'}`} 
+          />
+          <div className="text-white text-left transition-all duration-300">
+            <h3 className={`font-extralight text-white/80 transition-all duration-300 leading-tight ${isScrolled ? 'hidden' : 'text-[10px] md:text-[12px] max-w-40 md:max-w-60'}`}>
               Department of Science and Technology
             </h3>
-            <h2 className="font-bold text-xl md:text-2xl leading-none">PAGASA</h2>
+            <h2 className={`font-bold text-white transition-all duration-300 ${isScrolled ? 'text-lg md:text-xl' : 'text-xl md:text-2xl'}`}>
+              PAGASA
+            </h2>
           </div>
         </a>
 

@@ -59,7 +59,7 @@ function App() {
       {/* SECTION: Forecast — Live Weather Map */}
       <section
         id="forecast"
-        className="bg-grey-azure py-12 md:py-16 scroll-mt-[4.5rem]"
+        className="bg-grey-azure py-12 md:py-16 scroll-mt-20 md:scroll-mt-28"
       >
         <div className="max-w-7xl mx-auto px-4 md:px-6">
           <SectionHeading
@@ -91,7 +91,7 @@ function App() {
       {/* SECTION: Astronomy (nav: ASTRONOMY) — astronomical diary */}
       <section
         id="astronomy"
-        className="bg-slate-900 py-12 md:py-16 scroll-mt-[4.5rem] border-y border-white/10"
+        className="bg-slate-900 py-12 md:py-16 scroll-mt-20 md:scroll-mt-28 border-y border-white/10"
       >
         <div className="max-w-7xl mx-auto px-4 md:px-6">
           <SectionHeading
@@ -119,7 +119,7 @@ function App() {
       </section>
 
       {/* SECTION: Advisory — basin monitoring (nav: ADVISORY) */}
-      <section id="advisory" className="bg-white py-12 md:py-16 scroll-mt-[4.5rem] shadow-sm">
+      <section id="advisory" className="bg-white py-12 md:py-16 scroll-mt-20 md:scroll-mt-28 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 md:px-6">
           <SectionHeading
             icon={
@@ -148,7 +148,7 @@ function App() {
       {/* SECTION: Bulletin — flood bulletins (nav: BULLETIN) */}
       <section
         id="bulletin"
-        className="bg-amber-50/60 py-12 md:py-16 scroll-mt-[4.5rem] border-y border-amber-200/50"
+        className="bg-amber-50/60 py-12 md:py-16 scroll-mt-20 md:scroll-mt-28 border-y border-amber-200/50"
       >
         <div className="max-w-7xl mx-auto px-4 md:px-6">
           <SectionHeading

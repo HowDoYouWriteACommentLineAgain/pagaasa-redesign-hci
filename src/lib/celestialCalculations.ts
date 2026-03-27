@@ -120,9 +120,7 @@ export function getSunTimes(date: Date, lat: number, lon: number, timezone: numb
   
   for (const st of sunTimes) {
     const time = getTimeForAltitude(date, lat, lon, st.angle, st.name.includes('End') || st.name === 'sunset' || st.name === 'nauticalTwilightEnd' || st.name === 'astronomicalTwilightEnd');
-    if (time) {
-      times[st.name] = formatTime(time, timezone);
-    }
+    times[st.name] = formatTime(time, timezone);
   }
   
   times.solarNoon = formatTime(getSolarNoon(date, lon, timezone), timezone);
@@ -144,23 +142,36 @@ export function getSunTimes(date: Date, lat: number, lon: number, timezone: numb
   return times;
 }
 
-function getTimeForAltitude(date: Date, lat: number, lon: number, altitude: number, afterNoon: boolean): Date | null {
+function getTimeForAltitude(date: Date, lat: number, lon: number, altitude: number, afterNoon: boolean): Date {
   const baseDate = new Date(date);
   baseDate.setHours(0, 0, 0, 0);
   
-  for (let hour = 0; hour < 24; hour += 0.1) {
+  const startHour = afterNoon ? 11 : 4;
+  const endHour = afterNoon ? 21 : 13;
+  
+  let prevAlt = getSunPosition(new Date(baseDate.getTime() + (startHour - 0.5) * 60 * 60 * 1000), lat, lon).altitude;
+  
+  for (let min = startHour * 60; min <= endHour * 60; min += 15) {
+    const hour = min / 60;
     const testDate = new Date(baseDate.getTime() + hour * 60 * 60 * 1000);
-    const pos = getSunPosition(testDate, lat, lon);
+    const alt = getSunPosition(testDate, lat, lon).altitude;
     
-    if (afterNoon && pos.altitude <= altitude && pos.altitude > altitude - 1) {
-      return testDate;
+    if (afterNoon) {
+      if (prevAlt > altitude && alt <= altitude) {
+        const frac = (prevAlt - altitude) / (prevAlt - alt);
+        return new Date(testDate.getTime() - (1 - frac) * 15 * 60 * 1000);
+      }
+    } else {
+      if (prevAlt < altitude && alt >= altitude) {
+        const frac = (altitude - prevAlt) / (alt - prevAlt);
+        return new Date(testDate.getTime() - (1 - frac) * 15 * 60 * 1000);
+      }
     }
-    if (!afterNoon && pos.altitude >= altitude && pos.altitude < altitude + 1) {
-      return testDate;
-    }
+    prevAlt = alt;
   }
   
-  return null;
+  const fallbackHour = afterNoon ? 18 : 6;
+  return new Date(baseDate.getTime() + fallbackHour * 60 * 60 * 1000);
 }
 
 function getSolarNoon(date: Date, lon: number, timezone: number): Date {
@@ -211,19 +222,21 @@ export function getMoonPosition(date: Date, lat: number, lon: number): { altitud
   return { altitude: alt, azimuth: mod(az, 360) };
 }
 
-export function getMoonPhase(date: Date): { name: string; illumination: number; age: number } {
+export function getMoonPhase(date: Date): { name: string; illumination: number; age: number; isWaxing: boolean } {
   const phases = ['New Moon', 'Waxing Crescent', 'First Quarter', 'Waxing Gibbous', 'Full Moon', 'Waning Gibbous', 'Last Quarter', 'Waning Crescent'];
   
   const jd = getJulianDay(date);
   const age = mod(jd - 2451550.1, 29.530588853) / 29.530588853 * 29.53;
   const illumination = (1 - Math.cos(toRad(age / 29.53 * 360))) / 2 * 100;
+  const isWaxing = age < 14.765;
   
   const phaseIndex = Math.floor(((age / 29.53) * 8 + 0.5) % 8);
   
   return {
     name: phases[phaseIndex],
     illumination: Math.round(illumination * 100) / 100,
-    age: Math.round(age * 100) / 100
+    age: Math.round(age * 100) / 100,
+    isWaxing
   };
 }
 
@@ -231,38 +244,59 @@ export function getMoonTimes(date: Date, lat: number, lon: number, timezone: num
   moonrise: string;
   moonset: string;
   transit: string;
+  transitAlt: number;
 } {
   const times: any = {};
   const baseDate = new Date(date);
   baseDate.setHours(0, 0, 0, 0);
   
+  const jd = getJulianDay(date);
+  const lunarAge = mod(jd - 2451550.1, 29.530588853) / 29.530588853 * 29.53;
+  const riseDelay = (lunarAge / 29.53) * 24.8;
+  
   let prevAlt = getMoonPosition(baseDate, lat, lon).altitude;
   let moonrise: Date | null = null;
   let moonset: Date | null = null;
+  let maxAlt = -90;
+  let transitTime: Date | null = null;
   
-  for (let hour = 0.5; hour <= 24; hour += 0.5) {
+  for (let hour = 0; hour <= 24; hour += 0.1) {
     const testDate = new Date(baseDate.getTime() + hour * 60 * 60 * 1000);
     const alt = getMoonPosition(testDate, lat, lon).altitude;
     
-    if (prevAlt < 0 && alt >= 0 && !moonrise) {
-      moonrise = testDate;
+    if (hour > 0.1 && hour < 24) {
+      if (prevAlt < 0 && alt >= 0 && !moonrise) {
+        moonrise = testDate;
+      }
+      if (prevAlt > 0 && alt < 0 && !moonset) {
+        moonset = testDate;
+      }
     }
-    if (prevAlt > 0 && alt < 0 && !moonset) {
-      moonset = testDate;
+    
+    if (alt > maxAlt) {
+      maxAlt = alt;
+      transitTime = testDate;
     }
+    
     prevAlt = alt;
   }
   
-  if (moonrise) times.moonrise = formatTime(moonrise, timezone);
-  if (moonset) times.moonset = formatTime(moonset, timezone);
-  
-  if (moonrise && moonset) {
-    const midTime = new Date((moonrise.getTime() + moonset.getTime()) / 2);
-    if (midTime.getHours() < 12) {
-      midTime.setHours(midTime.getHours() + 12);
-    }
-    times.transit = formatTime(midTime, timezone);
+  if (!moonrise) {
+    const fallbackRise = new Date(baseDate.getTime() + (12 + riseDelay) * 60 * 60 * 1000);
+    moonrise = fallbackRise;
   }
+  if (!moonset) {
+    const fallbackSet = new Date(moonrise.getTime() + 12 * 60 * 60 * 1000);
+    moonset = fallbackSet;
+  }
+  if (!transitTime) {
+    transitTime = new Date(moonrise.getTime() + 6 * 60 * 60 * 1000);
+  }
+  
+  times.moonrise = formatTime(moonrise, timezone);
+  times.moonset = formatTime(moonset, timezone);
+  times.transit = formatTime(transitTime, timezone);
+  times.transitAlt = Math.round(maxAlt);
   
   return times;
 }
@@ -271,51 +305,203 @@ export function calculateTides(date: Date, timezone: number): TidalData[] {
   const baseDate = new Date(date);
   baseDate.setHours(0, 0, 0, 0);
   
-  const highTide1 = new Date(baseDate.getTime() + (4 + Math.random() * 2) * 60 * 60 * 1000);
-  const lowTide1 = new Date(highTide1.getTime() + 6.2 * 60 * 60 * 1000);
-  const highTide2 = new Date(lowTide1.getTime() + 6.2 * 60 * 60 * 1000);
-  const lowTide2 = new Date(highTide2.getTime() + 6.2 * 60 * 60 * 1000);
+  const moonPhase = getMoonPhase(date);
+  const jd = getJulianDay(date);
+  const t = (jd - 2451545.0) / 36525;
+  const l = mod(134.9633964 + 477198.8675055 * t, 360);
   
-  const isSpringTide = getMoonPhase(date).illumination > 80 || getMoonPhase(date).illumination < 20;
+  const lunarPhaseOffset = (l / 360) * 12.42;
   
-  const baseHigh = isSpringTide ? 1.6 : 1.3;
-  const baseLow = isSpringTide ? -0.1 : 0.2;
+  const isSpringTide = moonPhase.illumination > 80 || moonPhase.illumination < 20;
+  const isNeapTide = moonPhase.illumination > 40 && moonPhase.illumination < 60;
+  
+  const baseHigh = isSpringTide ? 1.6 : isNeapTide ? 1.1 : 1.3;
+  const baseLow = isSpringTide ? -0.1 : isNeapTide ? 0.4 : 0.2;
+  
+  const amplitudeMultiplier = isSpringTide ? 1.3 : isNeapTide ? 0.7 : 1.0;
+  
+  const highTide1 = new Date(baseDate.getTime() + (4 + (lunarPhaseOffset % 2)) * 60 * 60 * 1000);
+  const lowTide1 = new Date(highTide1.getTime() + 6.25 * 60 * 60 * 1000);
+  const highTide2 = new Date(lowTide1.getTime() + 6.25 * 60 * 60 * 1000);
+  const lowTide2 = new Date(highTide2.getTime() + 6.25 * 60 * 60 * 1000);
+  
+  const variance1 = Math.sin(lunarPhaseOffset * Math.PI) * 0.15;
+  const variance2 = Math.cos(lunarPhaseOffset * Math.PI) * 0.15;
   
   return [
-    { time: formatTime(highTide1, timezone), height: baseHigh + Math.random() * 0.4, type: 'high' },
-    { time: formatTime(lowTide1, timezone), height: baseLow - Math.random() * 0.3, type: 'low' },
-    { time: formatTime(highTide2, timezone), height: baseHigh + Math.random() * 0.4, type: 'high' },
-    { time: formatTime(lowTide2, timezone), height: baseLow - Math.random() * 0.3, type: 'low' },
+    { time: formatTime(highTide1, timezone), height: baseHigh + variance1, type: 'high' },
+    { time: formatTime(lowTide1, timezone), height: baseLow - variance1 * amplitudeMultiplier, type: 'low' },
+    { time: formatTime(highTide2, timezone), height: baseHigh + variance2, type: 'high' },
+    { time: formatTime(lowTide2, timezone), height: baseLow - variance2 * amplitudeMultiplier, type: 'low' },
   ];
 }
 
-export function getVisiblePlanets(date: Date, lat: number, lon: number): Array<{ name: string; altitude: number; magnitude: number; constellation: string }> {
-  const planets = [
-    { name: 'Venus', magnitude: -4.5, ra: 45, dec: 15, constellation: 'Pisces' },
-    { name: 'Mars', magnitude: 1.2, ra: 120, dec: 5, constellation: 'Cancer' },
-    { name: 'Jupiter', magnitude: -2.3, ra: 30, dec: -5, constellation: 'Aries' },
-    { name: 'Saturn', magnitude: 0.8, ra: 330, dec: -15, constellation: 'Aquarius' },
-    { name: 'Mercury', magnitude: 0.5, ra: 280, dec: -10, constellation: 'Capricornus' },
-  ];
+interface PlanetData {
+  name: string;
+  magnitude: number;
+  orbitalElements: {
+    L: number;
+    a: number;
+    e: number;
+    i: number;
+    omega: number;
+    Omega: number;
+  };
+  constellation: (ra: number) => string;
+}
+
+const PLANET_DATA: PlanetData[] = [
+  {
+    name: 'Mercury',
+    magnitude: 0.5,
+    orbitalElements: { L: 252.2509, a: 0.387, e: 0.2056, i: 7.005, omega: 77.456, Omega: 48.331 },
+    constellation: (ra) => getConstellationFromRA(ra, ['Aries', 'Pisces', 'Aquarius'])
+  },
+  {
+    name: 'Venus',
+    magnitude: -4.5,
+    orbitalElements: { L: 181.9798, a: 0.723, e: 0.0068, i: 3.395, omega: 131.764, Omega: 76.680 },
+    constellation: (ra) => getConstellationFromRA(ra, ['Pisces', 'Aries', 'Taurus'])
+  },
+  {
+    name: 'Mars',
+    magnitude: 1.2,
+    orbitalElements: { L: 355.4330, a: 1.524, e: 0.0934, i: 1.850, omega: 336.041, Omega: 49.558 },
+    constellation: (ra) => getConstellationFromRA(ra, ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo'])
+  },
+  {
+    name: 'Jupiter',
+    magnitude: -2.3,
+    orbitalElements: { L: 34.3964, a: 5.203, e: 0.0489, i: 1.303, omega: 14.728, Omega: 100.464 },
+    constellation: (ra) => getConstellationFromRA(ra, ['Taurus', 'Aries', 'Pisces'])
+  },
+  {
+    name: 'Saturn',
+    magnitude: 0.8,
+    orbitalElements: { L: 50.0774, a: 9.537, e: 0.0565, i: 2.489, omega: 93.057, Omega: 113.666 },
+    constellation: (ra) => getConstellationFromRA(ra, ['Aries', 'Pisces', 'Aquarius'])
+  }
+];
+
+function getConstellationFromRA(ra: number, possible: string[]): string {
+  const constellationIndex = Math.floor((mod(ra, 360) / 30) % possible.length);
+  return possible[constellationIndex];
+}
+
+function calculatePlanetPosition(date: Date, planet: PlanetData): { ra: number; dec: number; dist: number } {
+  const jd = getJulianDay(date);
+  const t = (jd - 2451545.0) / 36525;
   
+  const { L, a, e, i, omega, Omega } = planet.orbitalElements;
+  
+  const n = 357.5291 + 35999.0503 * t;
+  const M = mod(L - omega + n, 360);
+  
+  const E0 = mod(L + 180 / Math.PI * e * Math.sin(toRad(M)) * (1 + e * Math.cos(toRad(M))), 360);
+  let E = E0;
+  for (let iter = 0; iter < 10; iter++) {
+    E = mod(E0 + (180 / Math.PI) * e * Math.sin(toRad(E)), 360);
+  }
+  
+  const xv = a * (Math.cos(toRad(E)) - e);
+  const yv = a * Math.sqrt(1 - e * e) * Math.sin(toRad(E));
+  const dist = Math.sqrt(xv * xv + yv * yv);
+  
+  const v = toDeg(Math.atan2(yv, xv));
+  const r = dist;
+  
+  const xh = r * (Math.cos(toRad(Omega)) * Math.cos(toRad(v + omega)) - Math.sin(toRad(Omega)) * Math.sin(toRad(v + omega)) * Math.cos(toRad(i)));
+  const yh = r * (Math.sin(toRad(Omega)) * Math.cos(toRad(v + omega)) + Math.cos(toRad(Omega)) * Math.sin(toRad(v + omega)) * Math.cos(toRad(i)));
+  const zh = r * Math.sin(toRad(v + omega)) * Math.sin(toRad(i));
+  
+  const ra = toDeg(Math.atan2(yh, xh));
+  const dec = toDeg(Math.asin(zh / r));
+  
+  return { ra: mod(ra, 360), dec, dist };
+}
+
+function getPlanetRiseTransitSet(date: Date, lat: number, timezone: number, planet: PlanetData): { rise: string; transit: string; set: string } {
+  const { ra, dec } = calculatePlanetPosition(date, planet);
+  const jd = getJulianDay(date);
+  
+  const gmst0 = 280.46061837 + 360.98564736629 * (jd - 2451545.0);
+  
+  const cosH0 = (Math.sin(toRad(-0.5667)) - Math.sin(toRad(lat)) * Math.sin(toRad(dec))) /
+    (Math.cos(toRad(lat)) * Math.cos(toRad(dec)));
+  
+  let H0 = 90;
+  if (cosH0 >= -1 && cosH0 <= 1) {
+    H0 = toDeg(Math.acos(cosH0));
+  }
+  
+  const transitLST = mod(ra, 360);
+  const transitGMT = (transitLST - mod(gmst0, 360)) / 360 * 24;
+  const transitHours = mod(transitGMT + timezone, 24);
+  
+  const riseGMT = (transitGMT - H0 / 15);
+  const riseHours = mod(riseGMT + timezone, 24);
+  
+  const setGMT = (transitGMT + H0 / 15);
+  const setHours = mod(setGMT + timezone, 24);
+  
+  return {
+    rise: `${String(Math.floor(riseHours)).padStart(2, '0')}:${String(Math.round((riseHours % 1) * 60)).padStart(2, '0')}`,
+    transit: `${String(Math.floor(transitHours)).padStart(2, '0')}:${String(Math.round((transitHours % 1) * 60)).padStart(2, '0')}`,
+    set: `${String(Math.floor(setHours)).padStart(2, '0')}:${String(Math.round((setHours % 1) * 60)).padStart(2, '0')}`
+  };
+}
+
+export function getVisiblePlanets(date: Date, lat: number, lon: number): Array<{ name: string; altitude: number; magnitude: number; constellation: string; rise: string; transit: string; set: string }> {
   const jd = getJulianDay(date);
   const gmst = 280.46061837 + 360.98564736629 * (jd - 2451545.0);
   const lst = mod(gmst + lon, 360);
   
-  return planets.map(planet => {
-    const ha = lst - planet.ra;
+  return PLANET_DATA.map(planet => {
+    const { ra, dec } = calculatePlanetPosition(date, planet);
+    const ha = lst - ra;
     const alt = toDeg(Math.asin(
-      Math.sin(toRad(lat)) * Math.sin(toRad(planet.dec)) +
-      Math.cos(toRad(lat)) * Math.cos(toRad(planet.dec)) * Math.cos(toRad(ha))
+      Math.sin(toRad(lat)) * Math.sin(toRad(dec)) +
+      Math.cos(toRad(lat)) * Math.cos(toRad(dec)) * Math.cos(toRad(ha))
     ));
+    
+    const times = getPlanetRiseTransitSet(date, lat, 8, planet);
     
     return {
       name: planet.name,
       altitude: Math.round(alt * 10) / 10,
       magnitude: planet.magnitude,
-      constellation: planet.constellation
+      constellation: planet.constellation(ra),
+      rise: times.rise,
+      transit: times.transit,
+      set: times.set
     };
   }).filter(p => p.altitude > 0);
+}
+
+export function getAllPlanetEphemeris(date: Date, lat: number, lon: number, timezone: number): Array<{ name: string; altitude: number; magnitude: number; constellation: string; rise: string; transit: string; set: string }> {
+  return PLANET_DATA.map(planet => {
+    const { ra, dec } = calculatePlanetPosition(date, planet);
+    const jd = getJulianDay(date);
+    const gmst = 280.46061837 + 360.98564736629 * (jd - 2451545.0);
+    const lst = mod(gmst + lon, 360);
+    const ha = lst - ra;
+    const alt = toDeg(Math.asin(
+      Math.sin(toRad(lat)) * Math.sin(toRad(dec)) +
+      Math.cos(toRad(lat)) * Math.cos(toRad(dec)) * Math.cos(toRad(ha))
+    ));
+    
+    const times = getPlanetRiseTransitSet(date, lat, timezone, planet);
+    
+    return {
+      name: planet.name,
+      altitude: Math.round(alt * 10) / 10,
+      magnitude: planet.magnitude,
+      constellation: planet.constellation(ra),
+      rise: times.rise || '--:--',
+      transit: times.transit || '--:--',
+      set: times.set || '--:--'
+    };
+  });
 }
 
 export function getUpcomingEvents(date: Date, timezone: number): CelestialEvent[] {
@@ -424,9 +610,9 @@ export function getDailyEphemeris(date: Date, lat: number, lon: number, timezone
   for (const planet of visiblePlanets.slice(0, 3)) {
     ephemeris.push({
       body: planet.name,
-      rise: `${Math.floor(Math.random() * 6) + 5}:${String(Math.floor(Math.random() * 60)).padStart(2, '0')}`,
-      transit: `${Math.floor(Math.random() * 12) + 12}:${String(Math.floor(Math.random() * 60)).padStart(2, '0')}`,
-      set: `${Math.floor(Math.random() * 6) + 18}:${String(Math.floor(Math.random() * 60)).padStart(2, '0')}`,
+      rise: planet.rise || '--:--',
+      transit: planet.transit || '--:--',
+      set: planet.set || '--:--',
       altitude: Math.round(planet.altitude),
       magnitude: planet.magnitude,
       color: 'text-cyan-400'
@@ -503,20 +689,20 @@ function parseTime(timeStr: string, _timezone: number): Date {
   return date;
 }
 
-export function getNextTide(date: Date, timezone: number): { nextHigh: TidalData | null; nextLow: TidalData | null } {
+export function getNextTide(date: Date, timezone: number): { nextHigh: TidalData; nextLow: TidalData } {
   const tides = calculateTides(date, timezone);
   const now = date.getHours() * 60 + date.getMinutes();
   
-  let nextHigh: TidalData | null = null;
-  let nextLow: TidalData | null = null;
+  let nextHigh: TidalData = tides.find(t => t.type === 'high') || tides[0];
+  let nextLow: TidalData = tides.find(t => t.type === 'low') || tides[1];
   
   for (const tide of tides) {
     const [h, m] = tide.time.split(':').map(Number);
     const tideMinutes = h * 60 + m;
     
     if (tideMinutes > now) {
-      if (tide.type === 'high' && !nextHigh) nextHigh = tide;
-      if (tide.type === 'low' && !nextLow) nextLow = tide;
+      if (tide.type === 'high') nextHigh = tide;
+      if (tide.type === 'low') nextLow = tide;
     }
   }
   

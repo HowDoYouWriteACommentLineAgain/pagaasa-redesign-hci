@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import {
   Moon,
   Waves,
@@ -28,6 +28,19 @@ import {
 export default function Astronomy() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [hoverTime, setHoverTime] = useState<number | null>(null);
+  const [showTooltip, setShowTooltip] = useState(false);
+  const chartRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (chartRef.current && !chartRef.current.contains(e.target as Node)) {
+        setShowTooltip(false);
+        setHoverTime(null);
+      }
+    };
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, []);
 
   const timezone = MANILA.tz;
 
@@ -97,8 +110,34 @@ export default function Astronomy() {
                   <p className="text-white/50 text-sm">Illumination: {moonPhaseData.illumination.toFixed(0)}%</p>
                   <p className="text-white/40 text-xs mt-1">Age: {moonPhaseData.age.toFixed(1)} days</p>
                 </div>
-                <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-slate-700 to-slate-200 shadow-[0_0_20px_rgba(255,255,255,0.1)] flex items-center justify-center">
-                  <Moon className="w-8 h-8 text-slate-300" />
+                <div className="w-16 h-16 rounded-full shadow-[0_0_20px_rgba(255,255,255,0.1)] flex items-center justify-center overflow-hidden">
+                  <svg viewBox="0 0 100 100" className="w-full h-full">
+                    <defs>
+                      <radialGradient id="moonGlow" cx="30%" cy="30%" r="70%">
+                        <stop offset="0%" stopColor="#f8f8f8" />
+                        <stop offset="100%" stopColor="#d0d0d0" />
+                      </radialGradient>
+                      <clipPath id="moonClip">
+                        <circle cx="50" cy="50" r="45" />
+                      </clipPath>
+                    </defs>
+                    <circle cx="50" cy="50" r="45" fill="url(#moonGlow)" />
+                    <g clipPath="url(#moonClip)">
+                      {moonPhaseData.illumination > 2 && moonPhaseData.illumination < 98 && (
+                        <>
+                          {moonPhaseData.isWaxing ? (
+                            <circle cx={5 + (100 - moonPhaseData.illumination) * 0.45} cy="50" r="45" fill="#1a1a2e" />
+                          ) : (
+                            <circle cx={95 - (100 - moonPhaseData.illumination) * 0.45} cy="50" r="45" fill="#1a1a2e" />
+                          )}
+                        </>
+                      )}
+                      {moonPhaseData.illumination <= 2 && (
+                        <circle cx="50" cy="50" r="45" fill="#1a1a2e" />
+                      )}
+                    </g>
+                    <circle cx="50" cy="50" r="45" fill="none" stroke="#888" strokeWidth="1" opacity="0.5" />
+                  </svg>
                 </div>
               </div>
             </div>
@@ -111,18 +150,18 @@ export default function Astronomy() {
                 <div className="flex justify-between items-end">
                   <span className="text-white/50 text-sm">Next High Tide</span>
                   <span className="text-xl font-bold text-white">
-                    {nextTide.nextHigh ? nextTide.nextHigh.time : '--:--'}
+                    {nextTide.nextHigh.time}
                     <span className="text-xs text-blue-400 ml-1">
-                      {nextTide.nextHigh ? `+${(nextTide.nextHigh.height).toFixed(1)}m` : ''}
+                      +{nextTide.nextHigh.height.toFixed(1)}m
                     </span>
                   </span>
                 </div>
                 <div className="flex justify-between items-end">
                   <span className="text-white/50 text-sm">Next Low Tide</span>
                   <span className="text-xl font-bold text-white">
-                    {nextTide.nextLow ? nextTide.nextLow.time : '--:--'}
+                    {nextTide.nextLow.time}
                     <span className="text-xs text-red-400 ml-1">
-                      {nextTide.nextLow ? `-${(Math.abs(nextTide.nextLow.height)).toFixed(1)}m` : ''}
+                      -{Math.abs(nextTide.nextLow.height).toFixed(1)}m
                     </span>
                   </span>
                 </div>
@@ -161,7 +200,7 @@ export default function Astronomy() {
                 </button>
               </div>
 
-              <div className="h-64 relative border-b border-white/10 mb-10">
+              <div className="h-64 relative border-b border-white/10 mb-10" ref={chartRef}>
                 <svg viewBox="0 0 100 100" className="w-full h-full overflow-visible" preserveAspectRatio="none">
                   {timelineData.map((p, i) => {
                     const x = (p.hour / 24) * 100;
@@ -220,15 +259,15 @@ export default function Astronomy() {
                   <rect
                     x="0" y="0" width="100" height="100"
                     fill="transparent"
-                    onMouseMove={(e) => {
+                    onClick={(e) => {
                       const rect = e.currentTarget.getBoundingClientRect();
                       const x = ((e.clientX - rect.left) / rect.width) * 24;
                       setHoverTime(x);
+                      setShowTooltip(true);
                     }}
-                    onMouseLeave={() => setHoverTime(null)}
                   />
 
-                  {hoverTime !== null && (
+                  {(showTooltip && hoverTime !== null) && (
                     <line
                       x1={(hoverTime / 24) * 100} y1="0"
                       x2={(hoverTime / 24) * 100} y2="100"
@@ -247,11 +286,20 @@ export default function Astronomy() {
                   <span>24:00</span>
                 </div>
 
-                {hoverTime !== null && (
+                {(showTooltip && hoverTime !== null) && (
                   <div
-                    className="absolute bg-slate-700 border border-white/20 p-2 rounded-lg shadow-xl text-xs pointer-events-none z-10"
-                    style={{ left: `${(hoverTime / 24) * 100}%`, top: '-45px', transform: 'translateX(-50%)' }}
+                    className="absolute bg-slate-700 border border-white/20 p-2 rounded-lg shadow-xl text-xs z-20"
+                    style={{ left: `${(hoverTime / 24) * 100}%`, top: '-50px', transform: 'translateX(-50%)' }}
                   >
+                    <button
+                      onClick={() => {
+                        setShowTooltip(false);
+                        setHoverTime(null);
+                      }}
+                      className="absolute -top-1 -right-1 w-4 h-4 bg-slate-600 rounded-full flex items-center justify-center text-white/70 hover:text-white text-xs"
+                    >
+                      ×
+                    </button>
                     <p className="font-bold border-b border-white/20 pb-1 mb-1 text-white">{getTimeFromHour(hoverTime)}</p>
                     <p className="text-yellow-400">Sun: {Math.round(timelineData[Math.floor(hoverTime * 4)]?.sunAlt || 0)}°</p>
                     <p className="text-slate-300">Moon: {Math.round(timelineData[Math.floor(hoverTime * 4)]?.moonAlt || 0)}°</p>
@@ -319,7 +367,9 @@ export default function Astronomy() {
                   </div>
                   <div className="text-right">
                     <p className="text-sm font-bold text-white">{body.altitude}°</p>
-                    <p className="text-xs text-white/50">Mag: {body.magnitude.toFixed(1)}</p>
+                    <p className="text-xs text-white/50">
+                      {body.rise ? `↑${body.rise}` : ''} {body.set ? `↓${body.set}` : ''}
+                    </p>
                   </div>
                 </div>
               )) : (
