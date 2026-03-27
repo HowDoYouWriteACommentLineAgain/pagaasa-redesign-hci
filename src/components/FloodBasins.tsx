@@ -13,15 +13,15 @@ interface BasinData {
   wetland_: number;
   drrm_: number;
   crosscut_: number;
-  status: "Non-Flood Watch" | "Monitor" | "Alert";
-  trend: "Rising" | "Falling" | "Steady";
+  status: "Normal" | "Below Normal" | "Critical Low";
+  trend: "Stable" | "Decreasing" | "Low";
   level: string;
   maxLevel: string;
 }
 
 const basinList: BasinData[] = geoJsonData.features.map((f) => {
-  const statusOptions: Array<"Non-Flood Watch" | "Monitor" | "Alert"> = ["Non-Flood Watch", "Monitor", "Alert"];
-  const trendOptions: Array<"Rising" | "Falling" | "Steady"> = ["Rising", "Falling", "Steady"];
+  const statusOptions: Array<"Normal" | "Below Normal" | "Critical Low"> = ["Normal", "Below Normal", "Critical Low"];
+  const trendOptions: Array<"Stable" | "Decreasing" | "Low"> = ["Stable", "Decreasing", "Low"];
   
   const seed = f.properties.name.charCodeAt(0) + f.properties.name.length;
   
@@ -38,8 +38,8 @@ const basinList: BasinData[] = geoJsonData.features.map((f) => {
     crosscut_: f.properties.crosscut_,
     status: statusOptions[seed % 3],
     trend: trendOptions[seed % 3],
-    level: `${(seed % 10 + 2)}.${seed % 10}m`,
-    maxLevel: `${(seed % 10 + 8)}.${(seed + 5) % 10}m`,
+    level: `${(seed % 3 + 1)}.${seed % 10}m`,
+    maxLevel: `${(seed % 3 + 4)}.${(seed + 5) % 10}m`,
   };
 });
 
@@ -50,9 +50,9 @@ export default function FloodBasins() {
 
   const getStatusBg = (s: string) => {
     switch (s) {
-      case "Alert":
+      case "Critical Low":
         return "bg-rose-100 text-rose-700 border-rose-200";
-      case "Monitor":
+      case "Below Normal":
         return "bg-amber-100 text-amber-700 border-amber-200";
       default:
         return "bg-emerald-100 text-emerald-700 border-emerald-200";
@@ -61,9 +61,9 @@ export default function FloodBasins() {
 
   const getStatusDot = (s: string) => {
     switch (s) {
-      case "Alert":
+      case "Critical Low":
         return "bg-rose-500";
-      case "Monitor":
+      case "Below Normal":
         return "bg-amber-500";
       default:
         return "bg-emerald-500";
@@ -72,16 +72,17 @@ export default function FloodBasins() {
 
   const getTrendIcon = (trend: string) => {
     switch (trend) {
-      case "Rising":
+      case "Decreasing":
         return (
           <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="currentColor" className="text-rose-500">
-            <path d="M12 4l-8 8h5v8h6v-8h5z" />
+            <path d="M12 20l8-8h-5V4H9v8H4z" />
           </svg>
         );
-      case "Falling":
+      case "Low":
         return (
-          <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="currentColor" className="text-emerald-500">
-            <path d="M12 20l8-8h-5V4H9v8H4z" />
+          <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="currentColor" className="text-amber-500">
+            <path d="M12 20l-4-4h3V8h2v8h3l-4 4z" />
+            <rect x="6" y="18" width="12" height="2" />
           </svg>
         );
       default:
@@ -118,7 +119,7 @@ export default function FloodBasins() {
               <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
               <circle cx="12" cy="10" r="3"></circle>
             </svg>
-            Major River Basins of the Philippines
+            Major River Basins - Dry Season Conditions
           </h2>
           <div className="flex items-center gap-2 text-[10px] text-white/90 font-medium">
             <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span>
@@ -133,7 +134,7 @@ export default function FloodBasins() {
                 <th className="px-4 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wide">River Basin</th>
                 <th className="px-4 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wide">Region</th>
                 <th className="px-4 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wide text-right">Area</th>
-                <th className="px-4 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wide text-right">Level</th>
+                <th className="px-4 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wide text-right">Water Lvl</th>
                 <th className="px-4 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wide hidden md:table-cell">Trend</th>
                 <th className="px-4 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wide hidden md:table-cell">Status</th>
                 <th className="w-8"></th>
@@ -189,8 +190,8 @@ export default function FloodBasins() {
                     <div className="flex items-center gap-1.5">
                       {getTrendIcon(basin.trend)}
                       <span className={`text-[11px] font-medium ${
-                        basin.trend === 'Rising' ? 'text-rose-600' :
-                        basin.trend === 'Falling' ? 'text-emerald-600' : 'text-slate-500'
+                        basin.trend === 'Decreasing' ? 'text-rose-600' :
+                        basin.trend === 'Low' ? 'text-amber-600' : 'text-slate-500'
                       }`}>
                         {basin.trend}
                       </span>
@@ -227,15 +228,15 @@ export default function FloodBasins() {
         <div className="bg-slate-50 px-5 py-2.5 border-t border-slate-200 flex gap-4">
           <div className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-            <span className="text-[10px] text-slate-500">Non-Flood Watch</span>
+            <span className="text-[10px] text-slate-500">Normal</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-amber-500"></span>
-            <span className="text-[10px] text-slate-500">Monitor</span>
+            <span className="text-[10px] text-slate-500">Below Normal</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-rose-500"></span>
-            <span className="text-[10px] text-slate-500">Alert</span>
+            <span className="text-[10px] text-slate-500">Critical Low</span>
           </div>
         </div>
       </div>
@@ -272,7 +273,7 @@ export default function FloodBasins() {
             <div className="flex-1 overflow-y-auto">
               <div className="grid md:grid-cols-2">
                 <div className="h-[300px] md:h-[400px]">
-                  <BasinMap basinName={selectedBasin.RiverBasin} status={selectedBasin.status} />
+                  <BasinMap basinName={selectedBasin.RiverBasin} status={selectedBasin.status === 'Critical Low' ? 'Alert' : selectedBasin.status === 'Below Normal' ? 'Monitor' : 'Non-Flood Watch'} />
                 </div>
 
                 <div className="p-6 space-y-5">
@@ -326,8 +327,8 @@ export default function FloodBasins() {
                     <div className="flex items-center gap-3 bg-slate-50 rounded-lg p-3">
                       {getTrendIcon(selectedBasin.trend)}
                       <span className={`font-semibold ${
-                        selectedBasin.trend === 'Rising' ? 'text-rose-600' :
-                        selectedBasin.trend === 'Falling' ? 'text-emerald-600' : 'text-slate-600'
+                        selectedBasin.trend === 'Decreasing' ? 'text-rose-600' :
+                        selectedBasin.trend === 'Low' ? 'text-amber-600' : 'text-slate-600'
                       }`}>
                         {selectedBasin.trend}
                       </span>
