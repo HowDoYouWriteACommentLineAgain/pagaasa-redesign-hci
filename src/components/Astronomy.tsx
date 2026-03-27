@@ -1,11 +1,9 @@
 import { useState, useMemo } from 'react';
 import {
-  Sun,
   Moon,
   Waves,
   Star,
   Clock,
-  Calendar,
   Info,
   ChevronLeft,
   ChevronRight,
@@ -24,8 +22,7 @@ import {
   getDailyEphemeris,
   getConstellationsForDate,
   getNextTide,
-  getInsight,
-  TidalData
+  getInsight
 } from '../lib/celestialCalculations';
 
 export default function Astronomy() {
@@ -45,12 +42,6 @@ export default function Astronomy() {
   const nextTide = useMemo(() => getNextTide(selectedDate, timezone), [selectedDate, timezone]);
   const insight = useMemo(() => getInsight(selectedDate), [selectedDate]);
 
-  const formatTime = (hour: number): string => {
-    const h = Math.floor(hour);
-    const m = Math.round((hour % 1) * 60);
-    return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
-  };
-
   const getTimeFromHour = (hour: number): string => {
     const h = Math.floor(hour);
     const m = Math.round((hour % 1) * 60);
@@ -61,18 +52,6 @@ export default function Astronomy() {
     const newDate = new Date(selectedDate);
     newDate.setDate(newDate.getDate() + direction);
     setSelectedDate(newDate);
-  };
-
-  const tides: TidalData[] = useMemo(() => {
-    const base = timelineData.map(p => ({ time: getTimeFromHour(p.hour), height: 1.2 + p.tide * 0.3, type: 'mid' as const }));
-    return base;
-  }, [timelineData]);
-
-  const getSkyColor = (hour: number): string => {
-    if (hour >= 6 && hour < 8) return 'bg-gradient-to-b from-orange-400/30 to-blue-900/50';
-    if (hour >= 8 && hour < 18) return 'bg-gradient-to-b from-blue-500/20 to-slate-800/50';
-    if (hour >= 18 && hour < 19) return 'bg-gradient-to-b from-orange-500/30 to-purple-900/50';
-    return 'bg-gradient-to-b from-slate-950 to-slate-900';
   };
 
   return (
@@ -195,7 +174,13 @@ export default function Astronomy() {
                     else if (p.isBlueHour) fillColor = 'rgba(59, 130, 246, 0.15)';
                     else if (p.isDay) fillColor = 'rgba(250, 204, 21, 0.05)';
                     
-                    if (fillColor !== 'transparent' && next && fillColor !== timelineData[i - 1]?.fillColor) {
+                    const prevPoint = timelineData[i - 1];
+                    let prevFillColor = 'transparent';
+                    if (prevPoint?.isGoldenHour) prevFillColor = 'rgba(251, 146, 60, 0.15)';
+                    else if (prevPoint?.isBlueHour) prevFillColor = 'rgba(59, 130, 246, 0.15)';
+                    else if (prevPoint?.isDay) prevFillColor = 'rgba(250, 204, 21, 0.05)';
+                    
+                    if (fillColor !== 'transparent' && next && fillColor !== prevFillColor) {
                       return <rect key={i} x={x} y="0" width={nextX - x} height="100" fill={fillColor} />;
                     }
                     return null;
