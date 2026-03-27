@@ -1,22 +1,65 @@
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
+
+const NAV_ITEMS = [
+  ['HOME', 'home'],
+  ['FORECAST', 'forecast'],
+  ['AGRI', 'agri'],
+  ['BASINS', 'advisory'],
+  ['BULLETIN', 'bulletin'],
+  ['ASTRONOMY', 'astronomy'],
+] as const;
 
 function Navigation() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 50);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const scrollToSection = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
+    e.preventDefault();
+    setIsOpen(false);
+    const el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      try {
+        window.history.pushState(null, '', `#${id}`);
+      } catch {
+        /* file:// or restricted contexts can throw */
+      }
+    }
+  };
 
   return (
-    <nav className="bg-dark-azure px-5 py-4 z-50 relative">
-      <div className="flex justify-between items-center max-w-7xl mx-auto">
+    <nav className={`sticky top-0 z-50 w-full bg-dark-azure px-4 md:px-6 shadow-md shadow-black/20 relative transition-all duration-300 ${isScrolled ? 'py-2' : 'py-4'}`}>
+      <div className="flex justify-between items-center w-full">
         
         {/* Logo Section */}
-        <div id="logo_section" className="flex items-center gap-3 md:gap-5">
-          <img src="images/logo.png" width={50} alt="PAGASA LOGO" className="md:w-17.5 shrink-0" />
-          <div className="text-white">
-            <h3 className="font-extralight text-[10px] md:text-[12px] leading-tight max-w-40 md:max-w-60">
+        <a
+          href="#home"
+          id="logo_section"
+          className="flex items-center gap-2 md:gap-5 shrink-0 rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 transition-all duration-300"
+          onClick={(e) => scrollToSection(e, 'home')}
+        >
+          <img 
+            src="images/logo.png" 
+            alt="PAGASA LOGO" 
+            className={`shrink-0 transition-all duration-300 ${isScrolled ? 'w-8 md:w-12' : 'w-12 md:w-[50px]'}`} 
+          />
+          <div className="text-white text-left transition-all duration-300">
+            <h3 className={`font-extralight text-white/80 transition-all duration-300 leading-tight ${isScrolled ? 'hidden' : 'text-[10px] md:text-[12px] max-w-40 md:max-w-60'}`}>
               Department of Science and Technology
             </h3>
-            <h2 className="font-bold text-xl md:text-2xl leading-none">PAGASA</h2>
+            <h2 className={`font-bold text-white transition-all duration-300 ${isScrolled ? 'text-lg md:text-xl' : 'text-xl md:text-2xl'}`}>
+              PAGASA
+            </h2>
           </div>
-        </div>
+        </a>
 
         {/* Hamburger Button (Mobile Only) */}
         <button 
@@ -42,14 +85,14 @@ function Navigation() {
           ${isOpen ? 'block opacity-100' : 'hidden md:flex opacity-0 md:opacity-100'}
           text-white text-lg md:text-xl font-light
         `}>
-          {['HOME', 'FORECAST', 'ASTRONOMY', 'ADVISORY', 'BULLETIN'].map((link) => (
-            <a 
-              key={link} 
-              href="#" 
-              className="py-3 md:px-3 md:py-1 hover:bg-white/10 md:hover:bg-transparent md:hover:opacity-80 border-b border-white/10 md:border-none"
-              onClick={()=>setIsOpen(p=>!p)}
+          {NAV_ITEMS.map(([label, id]) => (
+            <a
+              key={id}
+              href={`#${id}`}
+              className="py-3 md:px-3 md:py-1 hover:bg-white/10 md:hover:bg-transparent md:hover:underline md:underline-offset-4 border-b border-white/10 md:border-none text-white/95 hover:text-white"
+              onClick={(e) => scrollToSection(e, id)}
             >
-              {link}
+              {label}
             </a>
           ))}
         </div>
