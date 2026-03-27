@@ -46,7 +46,7 @@ function App() {
   useEffect(() => {
     const raw = window.location.hash.replace(/^#/, "");
     if (!raw) return;
-    const id = raw === "astronomy" ? "astrology" : raw;
+    const id = raw === "astrology" ? "astronomy" : raw;
     const el = document.getElementById(id);
     if (el) el.scrollIntoView({ behavior: "auto", block: "start" });
   }, []);
@@ -88,9 +88,9 @@ function App() {
         </div>
       </section>
 
-      {/* SECTION: Astrology (nav: ASTROLOGY) — old #astronomy scrolls here */}
+      {/* SECTION: Astronomy (nav: ASTRONOMY) — astronomical diary */}
       <section
-        id="astrology"
+        id="astronomy"
         className="bg-slate-900 py-12 md:py-16 scroll-mt-[4.5rem] border-y border-white/10"
       >
         <div className="max-w-7xl mx-auto px-4 md:px-6">
@@ -108,13 +108,11 @@ function App() {
                 strokeLinecap="round"
                 strokeLinejoin="round"
               >
-                <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
-                <path d="M19 3v4"></path>
-                <path d="M21 5h-4"></path>
+                <path d="M12 2L2 7l5 5 2 7 5-5 7-2-5-5-5-5z"/>
               </svg>
             }
-            title="Astrology & sky calendar"
-            subtitle="Today, what’s next, and separate timelines for each kind of event"
+            title="Astronomy & Sky Diary"
+            subtitle="Today's celestial events and upcoming astronomical phenomena"
           />
           <Astronomy />
         </div>
