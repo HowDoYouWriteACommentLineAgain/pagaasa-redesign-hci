@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import BasinMap from "./BasinMap";
 import geoJsonData from "../data/data.json";
 
-interface BasinFeature {
+interface BasinData {
   RiverBasin: string;
+  layer: string;
   REGION: string;
   name: string;
   Area: string;
@@ -12,23 +13,40 @@ interface BasinFeature {
   wetland_: number;
   drrm_: number;
   crosscut_: number;
+  status: "Non-Flood Watch" | "Monitor" | "Alert";
+  trend: "Rising" | "Falling" | "Steady";
+  level: string;
+  maxLevel: string;
 }
 
-const basinList: BasinFeature[] = geoJsonData.features.map((f) => ({
-  RiverBasin: f.properties.RiverBasin,
-  REGION: f.properties.REGION,
-  name: f.properties.name,
-  Area: f.properties.Area,
-  invest: f.properties.invest,
-  water_: f.properties.water_,
-  wetland_: f.properties.wetland_,
-  drrm_: f.properties.drrm_,
-  crosscut_: f.properties.crosscut_,
-}));
+const basinList: BasinData[] = geoJsonData.features.map((f) => {
+  const statusOptions: Array<"Non-Flood Watch" | "Monitor" | "Alert"> = ["Non-Flood Watch", "Monitor", "Alert"];
+  const trendOptions: Array<"Rising" | "Falling" | "Steady"> = ["Rising", "Falling", "Steady"];
+  
+  const seed = f.properties.name.charCodeAt(0) + f.properties.name.length;
+  
+  return {
+    RiverBasin: f.properties.RiverBasin,
+    layer: f.properties.layer,
+    REGION: f.properties.REGION,
+    name: f.properties.name,
+    Area: f.properties.Area,
+    invest: f.properties.invest,
+    water_: f.properties.water_,
+    wetland_: f.properties.wetland_,
+    drrm_: f.properties.drrm_,
+    crosscut_: f.properties.crosscut_,
+    status: statusOptions[seed % 3],
+    trend: trendOptions[seed % 3],
+    level: `${(seed % 10 + 2)}.${seed % 10}m`,
+    maxLevel: `${(seed % 10 + 8)}.${(seed + 5) % 10}m`,
+  };
+});
 
 export default function FloodBasins() {
-  const [selectedBasin, setSelectedBasin] = useState<BasinFeature | null>(null);
-  const [status, setStatus] = useState<"Non-Flood Watch" | "Monitor" | "Alert">("Non-Flood Watch");
+  const [selectedBasin, setSelectedBasin] = useState<BasinData | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const rowRefs = useRef<(HTMLTableRowElement | null)[]>([]);
 
   const getStatusBg = (s: string) => {
     switch (s) {
@@ -41,96 +59,58 @@ export default function FloodBasins() {
     }
   };
 
+  const getStatusDot = (s: string) => {
+    switch (s) {
+      case "Alert":
+        return "bg-rose-500";
+      case "Monitor":
+        return "bg-amber-500";
+      default:
+        return "bg-emerald-500";
+    }
+  };
+
+  const getTrendIcon = (trend: string) => {
+    switch (trend) {
+      case "Rising":
+        return (
+          <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="currentColor" className="text-rose-500">
+            <path d="M12 4l-8 8h5v8h6v-8h5z" />
+          </svg>
+        );
+      case "Falling":
+        return (
+          <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="currentColor" className="text-emerald-500">
+            <path d="M12 20l8-8h-5V4H9v8H4z" />
+          </svg>
+        );
+      default:
+        return (
+          <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="currentColor" className="text-slate-400">
+            <circle cx="12" cy="12" r="5" />
+          </svg>
+        );
+    }
+  };
+
+  const getLevelPercent = (level: string, maxLevel: string) => {
+    const l = parseFloat(level);
+    const m = parseFloat(maxLevel);
+    return Math.min(Math.round((l / m) * 100), 100);
+  };
+
+  const handleRowClick = (basin: BasinData) => {
+    setSelectedBasin(basin);
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setTimeout(() => setSelectedBasin(null), 200);
+  };
+
   return (
     <>
-      {selectedBasin && (
-        <div
-          className="fixed inset-0 z-[200] flex items-center justify-center p-4"
-          onClick={() => setSelectedBasin(null)}
-        >
-          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
-          <div
-            className="relative bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-grey-azure">
-              <div>
-                <h2 className="text-xl font-bold text-white">{selectedBasin.name}</h2>
-                <p className="text-white/70 text-sm">{selectedBasin.REGION}</p>
-              </div>
-              <button
-                onClick={() => setSelectedBasin(null)}
-                className="w-10 h-10 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center text-white transition-colors"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <line x1="18" y1="6" x2="6" y2="18"></line>
-                  <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
-              </button>
-            </div>
-
-            <div className="flex-1 overflow-y-auto">
-              <div className="grid md:grid-cols-2 h-full">
-                <div className="h-[300px] md:h-auto md:min-h-[400px]">
-                  <BasinMap basinName={selectedBasin.RiverBasin} status={status} />
-                </div>
-
-                <div className="p-6 space-y-6">
-                  <div>
-                    <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wide mb-2">About the Basin</h3>
-                    <p className="text-slate-700 text-sm leading-relaxed">
-                      {selectedBasin.name} covers approximately {Number(selectedBasin.Area.replace(/,/g, '')).toLocaleString()} km² 
-                      in the {selectedBasin.REGION} region. This river basin plays a critical role in local water management 
-                      and flood risk mitigation.
-                    </p>
-                  </div>
-
-                  <div>
-                    <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wide mb-3">Basin Statistics</h3>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="bg-slate-50 rounded-lg p-3">
-                        <p className="text-xs text-slate-500">Area</p>
-                        <p className="font-bold text-slate-800">{Number(selectedBasin.Area.replace(/,/g, '')).toLocaleString()} km²</p>
-                      </div>
-                      <div className="bg-slate-50 rounded-lg p-3">
-                        <p className="text-xs text-slate-500">Region</p>
-                        <p className="font-bold text-slate-800 text-xs">{selectedBasin.REGION}</p>
-                      </div>
-                      <div className="bg-slate-50 rounded-lg p-3">
-                        <p className="text-xs text-slate-500">Investment</p>
-                        <p className="font-bold text-slate-800">₱{Number(selectedBasin.invest.replace(/,/g, '')).toLocaleString()}</p>
-                      </div>
-                      <div className="bg-slate-50 rounded-lg p-3">
-                        <p className="text-xs text-slate-500">DRRM Budget</p>
-                        <p className="font-bold text-slate-800">₱{Number(selectedBasin.drrm_).toLocaleString()}</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div>
-                    <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wide mb-3">Current Status</h3>
-                    <div className="space-y-2">
-                      <select
-                        value={status}
-                        onChange={(e) => setStatus(e.target.value as typeof status)}
-                        className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm"
-                      >
-                        <option value="Non-Flood Watch">Non-Flood Watch</option>
-                        <option value="Monitor">Monitor</option>
-                        <option value="Alert">Alert</option>
-                      </select>
-                      <span className={`inline-block px-3 py-1 rounded text-xs font-bold uppercase ${getStatusBg(status)}`}>
-                        {status}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
       <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-md">
         <div className="bg-grey-azure px-5 py-3.5 flex items-center justify-between">
           <h2 className="text-white font-bold uppercase tracking-wide text-xs flex items-center gap-2.5">
@@ -148,33 +128,95 @@ export default function FloodBasins() {
 
         <div className="overflow-auto max-h-[400px]">
           <table className="w-full text-left">
-            <thead className="sticky top-0 bg-slate-50 border-b border-slate-200">
+            <thead className="sticky top-0 bg-slate-50 border-b border-slate-200 z-10">
               <tr>
-                <th className="px-5 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wide">River Basin</th>
-                <th className="px-5 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wide">Region</th>
-                <th className="px-5 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wide text-right">Area (km²)</th>
+                <th className="px-4 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wide">River Basin</th>
+                <th className="px-4 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wide">Region</th>
+                <th className="px-4 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wide text-right">Area</th>
+                <th className="px-4 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wide text-right">Level</th>
+                <th className="px-4 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wide hidden md:table-cell">Trend</th>
+                <th className="px-4 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wide hidden md:table-cell">Status</th>
+                <th className="w-8"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {basinList.map((basin, idx) => (
                 <tr
                   key={idx}
-                  onClick={() => setSelectedBasin(basin)}
-                  className="hover:bg-slate-50 transition-colors cursor-pointer"
+                  ref={(el) => { rowRefs.current[idx] = el; }}
+                  onClick={() => handleRowClick(basin)}
+                  className="group hover:bg-slate-50 transition-colors cursor-pointer"
                 >
-                  <td className="px-5 py-3.5">
-                    <div className="flex items-center gap-3">
-                      <div className="w-1 h-8 rounded-full bg-grey-azure" />
-                      <span className="font-semibold text-slate-800 text-sm">{basin.name}</span>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-1 h-9 rounded-full bg-grey-azure group-hover:bg-dark-azure transition-colors" />
+                      <span className="font-semibold text-slate-800 text-xs">{basin.name}</span>
                     </div>
                   </td>
-                  <td className="px-5 py-3.5">
-                    <span className="text-xs text-slate-500 font-medium">{basin.REGION}</span>
+                  <td className="px-4 py-3">
+                    <div className="flex flex-col gap-1">
+                      <span className="text-[11px] text-slate-500">{basin.REGION}</span>
+                      <span className={`inline-flex items-center gap-1 w-fit text-[9px] font-semibold ${getStatusBg(basin.status)} px-1.5 py-0.5 rounded md:hidden`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${getStatusDot(basin.status)}`}></span>
+                        {basin.status}
+                      </span>
+                    </div>
                   </td>
-                  <td className="px-5 py-3.5 text-right">
-                    <span className="text-sm font-bold text-slate-700">
+                  <td className="px-4 py-3 text-right">
+                    <span className="text-xs font-medium text-slate-600">
                       {Number(basin.Area.replace(/,/g, '')).toLocaleString()}
                     </span>
+                    <span className="text-[10px] text-slate-400 ml-1">km²</span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-2 justify-end">
+                      <span className="text-xs font-bold text-slate-700">{basin.level}</span>
+                      <div className="w-12 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                        <div
+                          className={`h-full rounded-full ${
+                            getLevelPercent(basin.level, basin.maxLevel) > 80
+                              ? "bg-rose-500"
+                              : getLevelPercent(basin.level, basin.maxLevel) > 60
+                              ? "bg-amber-500"
+                              : "bg-emerald-500"
+                          }`}
+                          style={{ width: `${getLevelPercent(basin.level, basin.maxLevel)}%` }}
+                        />
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 hidden md:table-cell">
+                    <div className="flex items-center gap-1.5">
+                      {getTrendIcon(basin.trend)}
+                      <span className={`text-[11px] font-medium ${
+                        basin.trend === 'Rising' ? 'text-rose-600' :
+                        basin.trend === 'Falling' ? 'text-emerald-600' : 'text-slate-500'
+                      }`}>
+                        {basin.trend}
+                      </span>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 hidden md:table-cell">
+                    <div className="flex items-center gap-1.5">
+                      <span className={`w-2 h-2 rounded-full ${getStatusDot(basin.status)}`}></span>
+                      <span className={`text-[10px] font-semibold ${getStatusBg(basin.status)} px-2 py-0.5 rounded`}>
+                        {basin.status}
+                      </span>
+                    </div>
+                  </td>
+                  <td className="px-2 py-3">
+                    <svg 
+                      xmlns="http://www.w3.org/2000/svg" 
+                      width="12" 
+                      height="12" 
+                      viewBox="0 0 24 24" 
+                      fill="none" 
+                      stroke="currentColor" 
+                      strokeWidth="2" 
+                      className="text-slate-300 group-hover:text-slate-500 group-hover:translate-x-0.5 transition-all"
+                    >
+                      <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
                   </td>
                 </tr>
               ))}
@@ -182,12 +224,143 @@ export default function FloodBasins() {
           </table>
         </div>
 
-        <div className="bg-slate-50 px-5 py-2.5 border-t border-slate-200">
-          <p className="text-[10px] text-slate-500 text-center">
-            Click a basin to view detailed map and information
-          </p>
+        <div className="bg-slate-50 px-5 py-2.5 border-t border-slate-200 flex gap-4">
+          <div className="flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+            <span className="text-[10px] text-slate-500">Non-Flood Watch</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-amber-500"></span>
+            <span className="text-[10px] text-slate-500">Monitor</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-rose-500"></span>
+            <span className="text-[10px] text-slate-500">Alert</span>
+          </div>
         </div>
       </div>
+
+      {/* Modal */}
+      {isModalOpen && selectedBasin && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4" onClick={closeModal}>
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+          <div 
+            className="relative bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col animate-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-grey-azure">
+              <div>
+                <div className="flex items-center gap-3">
+                  <h2 className="text-xl font-bold text-white">{selectedBasin.name}</h2>
+                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${getStatusBg(selectedBasin.status)}`}>
+                    {selectedBasin.status}
+                  </span>
+                </div>
+                <p className="text-white/70 text-sm">{selectedBasin.REGION}</p>
+              </div>
+              <button
+                onClick={closeModal}
+                className="w-10 h-10 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center text-white transition-colors"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto">
+              <div className="grid md:grid-cols-2">
+                <div className="h-[300px] md:h-[400px]">
+                  <BasinMap basinName={selectedBasin.RiverBasin} status={selectedBasin.status} />
+                </div>
+
+                <div className="p-6 space-y-5">
+                  <div>
+                    <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-3">Hydrological Data</h3>
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="bg-slate-50 rounded-lg p-3">
+                        <p className="text-[10px] text-slate-500 uppercase">Current Level</p>
+                        <p className="font-bold text-slate-800 text-lg">{selectedBasin.level}</p>
+                      </div>
+                      <div className="bg-slate-50 rounded-lg p-3">
+                        <p className="text-[10px] text-slate-500 uppercase">Max Level</p>
+                        <p className="font-bold text-slate-800 text-lg">{selectedBasin.maxLevel}</p>
+                      </div>
+                      <div className="bg-slate-50 rounded-lg p-3">
+                        <p className="text-[10px] text-slate-500 uppercase">Status</p>
+                        <div className="flex items-center gap-1.5 mt-1">
+                          <span className={`w-2 h-2 rounded-full ${getStatusDot(selectedBasin.status)}`}></span>
+                          <span className={`text-xs font-semibold ${getStatusBg(selectedBasin.status)} px-2 py-0.5 rounded`}>
+                            {selectedBasin.status}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="mt-3 flex items-center gap-3">
+                      <div className="flex-1">
+                        <div className="text-xs text-slate-500 mb-1">Water Level Gauge</div>
+                        <div className="relative h-4 bg-slate-100 rounded-full overflow-hidden">
+                          <div
+                            className={`absolute top-0 left-0 h-full rounded-full transition-all ${
+                              getLevelPercent(selectedBasin.level, selectedBasin.maxLevel) > 80
+                                ? "bg-rose-500"
+                                : getLevelPercent(selectedBasin.level, selectedBasin.maxLevel) > 60
+                                ? "bg-amber-500"
+                                : "bg-emerald-500"
+                            }`}
+                            style={{ width: `${getLevelPercent(selectedBasin.level, selectedBasin.maxLevel)}%` }}
+                          />
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <span className="text-[10px] font-bold text-white drop-shadow-sm">
+                              {getLevelPercent(selectedBasin.level, selectedBasin.maxLevel)}%
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-3">Trend</h3>
+                    <div className="flex items-center gap-3 bg-slate-50 rounded-lg p-3">
+                      {getTrendIcon(selectedBasin.trend)}
+                      <span className={`font-semibold ${
+                        selectedBasin.trend === 'Rising' ? 'text-rose-600' :
+                        selectedBasin.trend === 'Falling' ? 'text-emerald-600' : 'text-slate-600'
+                      }`}>
+                        {selectedBasin.trend}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-3">Basin Statistics</h3>
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div className="flex justify-between">
+                        <span className="text-slate-500">Area</span>
+                        <span className="font-medium">{Number(selectedBasin.Area.replace(/,/g, '')).toLocaleString()} km²</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-500">Investment</span>
+                        <span className="font-medium">₱{Number(selectedBasin.invest.replace(/,/g, '')).toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-500">DRRM</span>
+                        <span className="font-medium">₱{Number(selectedBasin.drrm_).toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-500">Water</span>
+                        <span className="font-medium">₱{Number(selectedBasin.water_).toLocaleString()}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
