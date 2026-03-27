@@ -3,9 +3,10 @@ import { useState, useEffect } from 'react';
 const NAV_ITEMS = [
   ['HOME', 'home'],
   ['FORECAST', 'forecast'],
-  ['ASTROLOGY', 'astrology'],
-  ['ADVISORY', 'advisory'],
+  ['AGRI', 'agri'],
+  ['BASINS', 'advisory'],
   ['BULLETIN', 'bulletin'],
+  ['ASTRONOMY', 'astronomy'],
 ] as const;
 
 function Navigation() {

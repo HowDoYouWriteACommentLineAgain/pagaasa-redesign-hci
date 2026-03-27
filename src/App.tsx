@@ -56,7 +56,7 @@ function App() {
       <Navigation />
       <WeatherHero />
 
-      {/* SECTION: Forecast — Live Weather Map */}
+      {/* SECTION: Forecast — Weather data and terminology */}
       <section
         id="forecast"
         className="bg-grey-azure py-12 md:py-16 scroll-mt-20 md:scroll-mt-28"
@@ -81,14 +81,100 @@ function App() {
               </svg>
             }
             title="Forecast"
-            subtitle="Live weather map — interactive data from PAGASA"
+            subtitle="Weather data and Filipino terminology from PAGASA"
             dark={true}
           />
           <Panahon />
         </div>
       </section>
 
-      {/* SECTION: Astronomy (nav: ASTRONOMY) — astronomical diary */}
+      {/* SECTION: Agri Weather — Agricultural weather */}
+      <section id="agri" className="bg-slate-100 py-12 md:py-16 scroll-mt-20 md:scroll-mt-28">
+        <div className="max-w-7xl mx-auto px-4 md:px-6">
+          <SectionHeading
+            icon={
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M12 22V8"></path>
+                <path d="M5 12H2a10 10 0 0 0 20 0h-3"></path>
+                <path d="M8 8a4 4 0 1 1 8 0"></path>
+              </svg>
+            }
+            title="Agri Weather"
+            subtitle="Helping farmers and agricultural centers make informed decisions"
+          />
+          <AgriWeather />
+        </div>
+      </section>
+
+      {/* SECTION: Advisory — River basins and flood conditions */}
+      <section id="advisory" className="bg-white py-12 md:py-16 scroll-mt-20 md:scroll-mt-28 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 md:px-6">
+          <SectionHeading
+            icon={
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                <path d="m9 12 2 2 4-4"></path>
+              </svg>
+            }
+            title="Basin Conditions"
+            subtitle="River basin levels, drought status, and flood-watch conditions"
+          />
+          <FloodBasins />
+        </div>
+      </section>
+
+      {/* SECTION: Bulletin — Official warnings */}
+      <section
+        id="bulletin"
+        className="bg-amber-50/60 py-12 md:py-16 scroll-mt-20 md:scroll-mt-28 border-y border-amber-200/50"
+      >
+        <div className="max-w-7xl mx-auto px-4 md:px-6">
+          <SectionHeading
+            icon={
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                <line x1="12" y1="9" x2="12" y2="13"></line>
+                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+              </svg>
+            }
+            title="Official Bulletins"
+            subtitle="Issued warnings and imminent-threat notices by basin"
+          />
+          <FloodBulletins />
+        </div>
+      </section>
+
+      {/* SECTION: Astronomy — Sky and celestial events */}
       <section
         id="astronomy"
         className="bg-slate-900 py-12 md:py-16 scroll-mt-20 md:scroll-mt-28 border-y border-white/10"
@@ -118,93 +204,7 @@ function App() {
         </div>
       </section>
 
-      {/* SECTION: Advisory — basin monitoring (nav: ADVISORY) */}
-      <section id="advisory" className="bg-white py-12 md:py-16 scroll-mt-20 md:scroll-mt-28 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 md:px-6">
-          <SectionHeading
-            icon={
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="white"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-                <path d="m9 12 2 2 4-4"></path>
-              </svg>
-            }
-            title="Advisory"
-            subtitle="River basin levels and flood-watch status for planning and response"
-          />
-          <FloodBasins />
-        </div>
-      </section>
-
-      {/* SECTION: Bulletin — flood bulletins (nav: BULLETIN) */}
-      <section
-        id="bulletin"
-        className="bg-amber-50/60 py-12 md:py-16 scroll-mt-20 md:scroll-mt-28 border-y border-amber-200/50"
-      >
-        <div className="max-w-7xl mx-auto px-4 md:px-6">
-          <SectionHeading
-            icon={
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="white"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-                <line x1="12" y1="9" x2="12" y2="13"></line>
-                <line x1="12" y1="17" x2="12.01" y2="17"></line>
-              </svg>
-            }
-            title="Bulletin"
-            subtitle="Issued flood bulletins and imminent-threat notices by basin"
-          />
-          <FloodBulletins />
-        </div>
-      </section>
-
-      {/* SECTION: Agri Weather */}
-      <section className="bg-slate-100 py-12 md:py-16">
-        <div className="max-w-7xl mx-auto px-4 md:px-6">
-          <SectionHeading
-            icon={
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="white"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M12 22V8"></path>
-                <path d="M5 12H2a10 10 0 0 0 20 0h-3"></path>
-                <path d="M8 8a4 4 0 1 1 8 0"></path>
-              </svg>
-            }
-            title="Agri Weather"
-            subtitle="Helping farmers and agricultural centers make informed decisions"
-          />
-          <AgriWeather />
-        </div>
-      </section>
-
-      {/* SECTION: News & Events */}
+      {/* SECTION: News & Updates */}
       <section className="bg-dark-azure py-12 md:py-16">
         <div className="max-w-7xl mx-auto px-4 md:px-6">
           <SectionHeading
