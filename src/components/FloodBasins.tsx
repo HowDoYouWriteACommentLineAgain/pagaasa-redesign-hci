@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
 import BasinMap from "./BasinMap";
+import BasinOverviewMap from "./BasinOverviewMap";
 import geoJsonData from "../data/data.json";
 
 interface BasinData {
@@ -47,6 +48,14 @@ export default function FloodBasins() {
   const [selectedBasin, setSelectedBasin] = useState<BasinData | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const rowRefs = useRef<(HTMLTableRowElement | null)[]>([]);
+
+  const handleBasinSelectFromMap = (basinName: string) => {
+    const basin = basinList.find(b => b.name.toLowerCase() === basinName.toLowerCase());
+    if (basin) {
+      setSelectedBasin(basin);
+      setIsModalOpen(true);
+    }
+  };
 
   const getStatusBg = (s: string) => {
     switch (s) {
@@ -125,6 +134,15 @@ export default function FloodBasins() {
             <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span>
             {basinList.length} BASINS
           </div>
+        </div>
+
+        {/* Interactive Map */}
+        <div className="relative z-0 h-[250px] md:h-[300px] px-4 pt-4">
+          <BasinOverviewMap 
+            onBasinSelect={handleBasinSelectFromMap}
+            selectedBasin={selectedBasin?.name}
+            hidden={isModalOpen}
+          />
         </div>
 
         <div className="overflow-auto max-h-[400px]">
