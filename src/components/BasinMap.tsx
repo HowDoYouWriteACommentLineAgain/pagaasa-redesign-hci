@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { basinGeoData } from '../data/basinGeoData';
+import geoJsonData from '../data/data.json';
 
 interface BasinMapProps {
   basinName: string;
@@ -30,20 +30,41 @@ const getStatusFillColor = (status: string): string => {
   }
 };
 
+const getCenter = (layer: string): [number, number] => {
+  const centers: Record<string, [number, number]> = {
+    'apayao-abulug': [17.8, 121.0],
+    'abra': [17.1, 120.7],
+    'agno': [16.0, 120.4],
+    'Agusan': [8.2, 125.7],
+    'bicol': [13.2, 123.4],
+    'Buayan-Malungon': [6.3, 125.2],
+    'Cagayan': [17.5, 121.5],
+    'cdo': [8.3, 124.6],
+    'davao': [7.0, 125.4],
+    'ilog-hilabangan': [10.2, 122.8],
+    'jalaur': [10.8, 122.6],
+    'mindanao': [7.5, 124.8],
+    'pampanga': [15.0, 120.6],
+    'panay': [11.1, 122.3],
+    'plrb': [14.3, 121.1],
+    'ranao': [7.9, 124.3],
+    'tagoloan': [8.4, 124.8],
+    'tlrb': [7.5, 125.7],
+  };
+  return centers[layer] || [12.0, 122.0];
+};
+
 export default function BasinMap({ basinName, status }: BasinMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
-  const polygonRef = useRef<L.Polygon | null>(null);
+  const geoJsonLayerRef = useRef<L.GeoJSON | null>(null);
 
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) return;
 
-    const geoData = basinGeoData[basinName];
-    if (!geoData) return;
-
     const map = L.map(mapRef.current, {
-      center: geoData.center as L.LatLngExpression,
-      zoom: geoData.zoom,
+      center: [12.0, 122.0],
+      zoom: 6,
       zoomControl: true,
       scrollWheelZoom: false,
     });
@@ -53,24 +74,7 @@ export default function BasinMap({ basinName, status }: BasinMapProps) {
       maxZoom: 18,
     }).addTo(map);
 
-    const polygon = L.polygon(geoData.coordinates as L.LatLngExpression[], {
-      color: getStatusColor(status),
-      fillColor: getStatusFillColor(status),
-      fillOpacity: 0.5,
-      weight: 3,
-    }).addTo(map);
-
-    polygon.bindPopup(`
-      <div style="font-family: sans-serif; padding: 8px;">
-        <strong>${geoData.name}</strong><br/>
-        Status: <span style="color: ${getStatusColor(status)}; font-weight: bold;">${status}</span>
-      </div>
-    `);
-
-    map.fitBounds(polygon.getBounds(), { padding: [20, 20] });
-
     mapInstanceRef.current = map;
-    polygonRef.current = polygon;
 
     return () => {
       if (mapInstanceRef.current) {
@@ -81,23 +85,51 @@ export default function BasinMap({ basinName, status }: BasinMapProps) {
   }, []);
 
   useEffect(() => {
-    if (polygonRef.current) {
-      const geoData = basinGeoData[basinName];
-      if (geoData) {
-        polygonRef.current.setLatLngs(geoData.coordinates as L.LatLngExpression[]);
-        polygonRef.current.setStyle({
-          color: getStatusColor(status),
-          fillColor: getStatusFillColor(status),
-        });
-        mapInstanceRef.current?.fitBounds(polygonRef.current.getBounds(), { padding: [20, 20] });
-        polygonRef.current.setPopupContent(`
-          <div style="font-family: sans-serif; padding: 8px;">
-            <strong>${geoData.name}</strong><br/>
-            Status: <span style="color: ${getStatusColor(status)}; font-weight: bold;">${status}</span>
-          </div>
-        `);
-      }
+    if (!mapInstanceRef.current) return;
+
+    if (geoJsonLayerRef.current) {
+      geoJsonLayerRef.current.remove();
     }
+
+    const selectedFeature = geoJsonData.features.find(
+      (f) => f.properties.RiverBasin?.toLowerCase() === basinName.toLowerCase()
+    );
+
+    if (!selectedFeature) return;
+
+    const layer = selectedFeature.properties.layer;
+    const center = getCenter(layer);
+
+    mapInstanceRef.current.setView(center, 8);
+
+    geoJsonLayerRef.current = L.geoJSON(geoJsonData as GeoJSON.FeatureCollection, {
+      filter: (feature) => {
+        return feature?.properties.RiverBasin?.toLowerCase() === basinName.toLowerCase();
+      },
+      style: {
+        color: getStatusColor(status),
+        fillColor: getStatusFillColor(status),
+        fillOpacity: 0.5,
+        weight: 3,
+      },
+      onEachFeature: (feature, layer) => {
+        const props = feature.properties;
+        const popupContent = `
+          <div style="font-family: sans-serif; padding: 8px; min-width: 200px;">
+            <h3 style="margin: 0 0 8px 0; font-size: 14px; font-weight: bold;">${props.name || props.RiverBasin}</h3>
+            <p style="margin: 4px 0; font-size: 12px;"><strong>Region:</strong> ${props.REGION}</p>
+            <p style="margin: 4px 0; font-size: 12px;"><strong>Area:</strong> ${props.Area} km²</p>
+            <p style="margin: 4px 0; font-size: 12px;"><strong>Status:</strong> <span style="color: ${getStatusColor(status)}; font-weight: bold;">${status}</span></p>
+            <hr style="margin: 8px 0; border: 0.5px solid #ddd;"/>
+            <p style="margin: 4px 0; font-size: 11px;"><strong>Water:</strong> ₱${Number(props.water_).toLocaleString()}</p>
+            <p style="margin: 4px 0; font-size: 11px;"><strong>Wetland:</strong> ₱${Number(props.wetland_).toLocaleString()}</p>
+            <p style="margin: 4px 0; font-size: 11px;"><strong>DRRM:</strong> ₱${Number(props.drrm_).toLocaleString()}</p>
+          </div>
+        `;
+        layer.bindPopup(popupContent);
+      },
+    }).addTo(mapInstanceRef.current);
+
   }, [basinName, status]);
 
   return (
